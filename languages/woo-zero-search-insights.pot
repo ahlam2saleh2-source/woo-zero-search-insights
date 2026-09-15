@@ -1,0 +1,259 @@
+# Translation file for Woo Zero Search Insights
+# Copyright (C) 2024 alialiapoeskndr987
+# This file is distributed under the same license as the Woo Zero Search Insights package.
+msgid ""
+msgstr ""
+"Project-Id-Version: Woo Zero Search Insights 1.0.0\n"
+"Report-Msgid-Bugs-To: https://github.com/alialiapoeskndr987-source/firstworldpress/issues\n"
+"POT-Creation-Date: 2024-01-01 00:00+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Manual\n"
+"X-Domain: woo-zero-search-insights\n"
+
+#. Plugin Name of the plugin
+msgid "Woo Zero Search Insights"
+msgstr ""
+
+#. Plugin Description
+msgid "اكتشف ما يبحث عنه عملاؤك دون أن يجدوه. تسجّل الإضافة عمليات البحث في WooCommerce التي لا تُرجع نتائج، مع لوحة إحصائيات احترافية وتصدير CSV وميزات تنظيف تلقائي."
+msgstr ""
+
+#. Author
+msgid "alialiapoeskndr987"
+msgstr ""
+
+#: woo-zero-search-insights.php
+msgid "Woo Zero Search Insights يتطلب تفعيل WooCommerce أولاً. فعّل WooCommerce ثم أعد تفعيل هذه الإضافة."
+msgstr ""
+
+#: includes/views/dashboard.php
+msgid "لوحة المعلومات"
+msgstr ""
+
+#: includes/views/dashboard.php
+msgid "إجمالي عمليات البحث"
+msgstr ""
+
+#: includes/views/dashboard.php
+msgid "عمليات بلا نتائج"
+msgstr ""
+
+#: includes/views/dashboard.php
+msgid "معدل الفشل"
+msgstr ""
+
+#: includes/views/dashboard.php
+msgid "فرص تحسين"
+msgstr ""
+
+#: includes/views/dashboard.php
+msgid "هل أنت متأكد من حذف جميع السجلات؟"
+msgstr ""
+
+#: includes/views/dashboard.php
+msgid "سيتم حذف جميع سجلات هذا المصطلح. متابعة؟"
+msgstr ""
+
+#: includes/views/dashboard.php
+msgid "سيتم تصدير السجلات بصيغة CSV. متابعة؟"
+msgstr ""
+
+msgid "آخر 7 أيام"
+msgstr ""
+
+msgid "آخر 30 يوم"
+msgstr ""
+
+msgid "آخر 90 يوم"
+msgstr ""
+
+msgid "آخر سنة"
+msgstr ""
+
+msgid "الكل"
+msgstr ""
+
+msgid "الفترة:"
+msgstr ""
+
+msgid "مصطلح البحث"
+msgstr ""
+
+msgid "مرات البحث"
+msgstr ""
+
+msgid "فريدة"
+msgstr ""
+
+msgid "آخر مرة"
+msgstr ""
+
+msgid "إجراء"
+msgstr ""
+
+msgid "حذف"
+msgstr ""
+
+msgid "إجراءات سريعة"
+msgstr ""
+
+msgid "عرض السجلات"
+msgstr ""
+
+msgid "الإعدادات"
+msgstr ""
+
+msgid "تصدير CSV"
+msgstr ""
+
+msgid "مسح الكل"
+msgstr ""
+
+msgid "إجمالي البحث"
+msgstr ""
+
+msgid "بلا نتائج"
+msgstr ""
+
+msgid "لا توجد بيانات بعد"
+msgstr ""
+
+msgid "بمجرد أن يبحث عملاؤك عن مصطلحات غير موجودة في متجرك، ستظهر هنا."
+msgstr ""
+
+msgid "أعلى عمليات البحث بلا نتائج"
+msgstr ""
+
+msgid "عرض كل السجلات"
+msgstr ""
+
+msgid "سجلات عمليات البحث"
+msgstr ""
+
+msgid "عرض جميع عمليات البحث المسجلة، يمكن التبديل بين عرض الكل وعرض فقط بدون نتائج."
+msgstr ""
+
+msgid "نتائج"
+msgstr ""
+
+msgid "نوع"
+msgstr ""
+
+msgid "المستخدم"
+msgstr ""
+
+msgid "التاريخ"
+msgstr ""
+
+msgid "مكرر"
+msgstr ""
+
+msgid "زائر"
+msgstr ""
+
+msgid "تصدير هذه القائمة (CSV)"
+msgstr ""
+
+msgid "لا توجد سجلات بعد"
+msgstr ""
+
+msgid "عمليات البحث المسجلة ستظهر هنا تلقائياً."
+msgstr ""
+
+msgid "السابق"
+msgstr ""
+
+msgid "التالي"
+msgstr ""
+
+msgid "إعدادات Woo Zero Search Insights"
+msgstr ""
+
+msgid "تحكم في كيفية تتبع عمليات البحث وحفظها."
+msgstr ""
+
+msgid "تفعيل التتبع"
+msgstr ""
+
+msgid "نعم، فعّل"
+msgstr ""
+
+msgid "تتبع المستخدمين المسجلين"
+msgstr ""
+
+msgid "تتبع الزوار"
+msgstr ""
+
+msgid "إخفاء آخر IP للمستخدم (للخصوصية)"
+msgstr ""
+
+msgid "تنظيف السجلات القديمة تلقائياً"
+msgstr ""
+
+msgid "مدة الاحتفاظ (أيام)"
+msgstr ""
+
+msgid "الحد الأدنى لطول المصطلح"
+msgstr ""
+
+msgid "الحد الأقصى لطول المصطلح"
+msgstr ""
+
+msgid "مصطلحات مستثناة (كل مصطلح في سطر)"
+msgstr ""
+
+msgid "أدخل كلمة أو جملة في كل سطر. أي مصطلح يحتوي على هذه الكلمات لن يُسجل."
+msgstr ""
+
+msgid "حفظ الإعدادات"
+msgstr ""
+
+msgid "ليس لديك صلاحية للوصول لهذه الصفحة."
+msgstr ""
+
+msgid "ليس لديك صلاحية."
+msgstr ""
+
+msgid "رمز الأمان غير صالح."
+msgstr ""
+
+msgid "تم حذف جميع السجلات."
+msgstr ""
+
+msgid "لا صلاحية."
+msgstr ""
+
+msgid "مصطلح غير صالح."
+msgstr ""
+
+msgid "تم حذف %d سجل."
+msgstr ""
+
+msgid "Woo Zero Search Insights — الإصدار %s | صنع بحب لمجتمع WooCommerce العربي"
+msgstr ""
+
+msgid "%d مصطلح فريد"
+msgstr ""
+
+msgid "%d مصطلح فريد بلا نتائج"
+msgstr ""
+
+msgid "نسبة عمليات البحث التي لم تجد نتائج"
+msgstr ""
+
+msgid "مصطلحات يمكنك إضافة منتجات لها"
+msgstr ""
+
+msgid "اتجاه عمليات البحث"
+msgstr ""
+
+msgid "تم تفعيل Woo Zero Search Insights بنجاح. ابدأ بمتابعة عمليات البحث في "
+msgstr ""
+
+msgid "جارٍ التحميل..."
+msgstr ""
+
+msgid "لا توجد بيانات"
+msgstr ""
