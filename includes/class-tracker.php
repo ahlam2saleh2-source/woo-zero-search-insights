@@ -2,6 +2,15 @@
 /**
  * فئة المتتبع - تلتقط كل عمليات البحث في WooCommerce (مع النتائج وبدونها)
  *
+ * المسارات المشمولة:
+ *  1. صفحة نتائج البحث الكلاسيكية (?s=) — template_redirect بأولوية مبكرة
+ *  2. البحث الفوري AJAX (wc-ajax=woocommerce_ajax_search) — مع النتائج وبدونها
+ *  3. بحث القوالب الحديثة عبر REST Store API (/wc/store/...?search=)
+ *  4. احتياط: خطاف woocommerce_no_products_found + shortcode
+ *
+ * دمج دفعة الكتابة: ضغطات الكتابة المتتالية في البحث الفوري تُدمج في سجل واحد
+ * يحمل المصطلح النهائي، فلا يتضخم السجل ولا تضيع النتائج الناجحة.
+ *
  * @package Woo_Zero_Search_Insights
  */
 
@@ -33,11 +42,14 @@ class WZSI_Tracker
         add_action('woocommerce_no_products_found', array($this, 'capture_zero_search'), 10);
         add_action('woocommerce_shortcode_no_products', array($this, 'capture_shortcode_no_products'), 10, 1);
 
-        // تتبع AJAX search (WooCommerce Blocks + AJAX) — صفرية فقط لتجنب تضخيم السجل بكل ضغطة حرف
+        // تتبع البحث الفوري AJAX إن وفره القالب أو إضافة بحث (مع النتائج وبدونها)
         add_action('wc_ajax_woocommerce_ajax_search', array($this, 'maybe_capture_ajax_search'), 5);
 
-        // الالتقاط الرئيسي: كل عمليات بحث الصفحة (مع النتائج وبدونها)
-        add_action('template_redirect', array($this, 'capture_search_query_on_template'), 100);
+        // تتبع بحث القوالب الحديثة عبر REST Store API (WooCommerce Blocks)
+        add_filter('rest_pre_dispatch', array($this, 'capture_rest_store_search'), 10, 3);
+
+        // الالتقاط الرئيسي: كل عمليات بحث الصفحة (أولوية مبكرة قبل أي تحويل قالب)
+        add_action('template_redirect', array($this, 'capture_search_query_on_template'), 5);
     }
 
     /**
@@ -169,12 +181,41 @@ class WZSI_Tracker
     }
 
     /**
+     * سجل تشخيصي مؤقت لآخر محاولات الالتقاط (يظهر في صفحة فحص الصحة)
+     * يُكتب فقط داخل سياق بحث فعلي — الصفحات العادية لا تكتب شيئًا
+     */
+    private function debug_note($source, $term, $found, $decision, $reason = '')
+    {
+        $entries = get_option('wzsi_capture_debug', array());
+        if (!is_array($entries)) {
+            $entries = array();
+        }
+        array_unshift($entries, array(
+            't'     => current_time('mysql'),
+            'src'   => sanitize_text_field((string) $source),
+            'term'  => function_exists('mb_substr') ? mb_substr((string) $term, 0, 60) : substr((string) $term, 0, 60),
+            'found' => (int) $found,
+            'do'    => ('logged' === $decision) ? 'logged' : 'skip',
+            'why'   => sanitize_text_field((string) $reason),
+            'uri'   => isset($_SERVER['REQUEST_URI'])
+                ? substr(sanitize_text_field(wp_unslash($_SERVER['REQUEST_URI'])), 0, 120)
+                : '',
+        ));
+        if (count($entries) > 25) {
+            $entries = array_slice($entries, 0, 25);
+        }
+        update_option('wzsi_capture_debug', $entries);
+    }
+
+    /**
      * تسجيل عملية بحث (مع نتائج أو بدونها) — النقطة المركزية للتسجيل
+     *
+     * @return bool هل سُجل فعلاً؟
      */
     private function log_search($term, $results_count, $is_ajax = 0)
     {
         if (!$this->should_log($term, $is_ajax)) {
-            return;
+            return false;
         }
 
         $user_info = $this->get_user_info();
@@ -191,6 +232,7 @@ class WZSI_Tracker
         ));
 
         self::$logged_this_request = true;
+        return true;
     }
 
     /**
@@ -198,7 +240,63 @@ class WZSI_Tracker
      */
     private function log_zero_search($term, $is_ajax = 0)
     {
-        $this->log_search($term, 0, $is_ajax);
+        return $this->log_search($term, 0, $is_ajax);
+    }
+
+    /**
+     * عدّ نتائج المنتجات لمصطلح بحث (استعلام خفيف مع found_rows)
+     */
+    private function count_product_results($term)
+    {
+        $args = array(
+            's'              => $term,
+            'post_type'      => 'product',
+            'post_status'    => 'publish',
+            'posts_per_page' => 1,
+            'fields'         => 'ids',
+            'no_found_rows'  => false,
+            'tax_query'      => array(
+                array(
+                    'taxonomy' => 'product_visibility',
+                    'field'    => 'name',
+                    'terms'    => array('exclude-from-search'),
+                    'operator' => 'NOT IN',
+                ),
+            ),
+        );
+        $args = apply_filters('wzsi_count_search_args', $args, $term);
+
+        $q = new WP_Query($args);
+        $found = (int) $q->found_posts;
+        wp_reset_postdata();
+
+        return $found;
+    }
+
+    /**
+     * حفظ عملية بحث فورية (AJAX / REST) مع دمج دفعة الكتابة
+     *
+     * @return bool هل حُفظ؟
+     */
+    private function persist_ajax_search($term, $found)
+    {
+        $user_info = $this->get_user_info();
+
+        $id = WZSI_Database::log_ajax_search(array(
+            'search_term'   => sanitize_text_field($term),
+            'results_count' => max(0, (int) $found),
+            'user_id'       => $user_info['user_id'],
+            'user_ip'       => $user_info['user_ip'],
+            'user_agent'    => $user_info['user_agent'],
+            'referer'       => $user_info['referer'],
+            'language'      => $user_info['language'],
+        ));
+
+        if ($id) {
+            self::$logged_this_request = true;
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -207,14 +305,19 @@ class WZSI_Tracker
      */
     public function capture_zero_search()
     {
-        if (self::$logged_this_request || !is_search() || !function_exists('WC')) {
+        if (!is_search() || !function_exists('WC')) {
             return;
         }
-        $term = get_search_query();
+        $term = get_search_query(false);
+        if (self::$logged_this_request) {
+            $this->debug_note('no_products_found', $term, 0, 'skip', 'سبق التسجيل في نفس الطلب');
+            return;
+        }
         if (!$term) {
             return;
         }
-        $this->log_zero_search($term, 0);
+        $logged = $this->log_zero_search($term, 0);
+        $this->debug_note('no_products_found', $term, 0, $logged ? 'logged' : 'skip', $logged ? 'احتياط: صفرية' : 'should_log رفض');
     }
 
     /**
@@ -228,15 +331,17 @@ class WZSI_Tracker
         if (!is_a($query, 'WC_Query') && !is_object($query)) {
             return;
         }
-        $term = get_search_query();
+        $term = get_search_query(false);
         if (!$term) {
             return;
         }
-        $this->log_zero_search($term, 0);
+        $logged = $this->log_zero_search($term, 0);
+        $this->debug_note('shortcode_no_products', $term, 0, $logged ? 'logged' : 'skip', $logged ? 'احتياط: صفرية' : 'should_log رفض');
     }
 
     /**
-     * التقاط AJAX Search — صفرية فقط (كل ضغطة حرف في البحث الفوري لا تُسجل كبحث ناجح)
+     * التقاط البحث الفوري AJAX — يسجل الناجحة والصفرية معًا
+     * (دمج دفعة الكتابة يمنع تضخيم السجل بكل ضغطة حرف)
      */
     public function maybe_capture_ajax_search()
     {
@@ -244,61 +349,94 @@ class WZSI_Tracker
         if (!$term) {
             $term = isset($_REQUEST['s']) ? sanitize_text_field(wp_unslash($_REQUEST['s'])) : '';
         }
-        if (!$term || !$this->should_log($term, true)) {
+        if (!$term) {
+            return;
+        }
+        if (!$this->should_log($term, true)) {
+            $this->debug_note('wc_ajax_search', $term, 0, 'skip', 'should_log رفض');
             return;
         }
 
-        // استعلام منتجات عادي
-        $args = array(
-            's'                => $term,
-            'post_type'         => 'product',
-            'posts_per_page'    => 1,
-            'post_status'       => 'publish',
-            'fields'            => 'ids',
-            'no_found_rows'     => true,
-            'tax_query'         => array(
-                array(
-                    'taxonomy' => 'product_visibility',
-                    'field'    => 'name',
-                    'terms'    => array('exclude-from-search'),
-                    'operator' => 'NOT IN',
-                ),
-            ),
-        );
-        $args = apply_filters('wzsi_ajax_search_args', $args, $term);
-
-        $results = get_posts($args);
-
-        if (empty($results)) {
-            $this->log_zero_search($term, 1);
-        }
+        $found = $this->count_product_results($term);
+        $logged = $this->persist_ajax_search($term, $found);
+        $this->debug_note('wc_ajax_search', $term, $found, $logged ? 'logged' : 'skip', $logged ? 'بحث فوري AJAX' : 'فشل الحفظ');
     }
 
     /**
-     * الالتقاط الرئيسي على template_redirect
+     * التقاط بحث REST Store API (/wc/store/... search=)
+     * يستخدمه WooCommerce Blocks والقوالب الحديثة للبحث الفوري
+     * لا يكسر REST إطلاقًا (try/catch + إرجاع النتيجة كما هي)
+     */
+    public function capture_rest_store_search($result, $server, $request)
+    {
+        try {
+            if (!is_a($request, 'WP_REST_Request')) {
+                return $result;
+            }
+            $route = $request->get_route();
+            if (!is_string($route) || strpos($route, '/wc/store') !== 0) {
+                return $result;
+            }
+            $term = $request->get_param('search');
+            if (!is_string($term) || '' === trim($term)) {
+                return $result;
+            }
+            $term = sanitize_text_field($term);
+
+            if (!$this->should_log($term, true)) {
+                $this->debug_note('rest_store_api', $term, 0, 'skip', 'should_log رفض');
+                return $result;
+            }
+
+            $found = $this->count_product_results($term);
+            $logged = $this->persist_ajax_search($term, $found);
+            $this->debug_note('rest_store_api', $term, $found, $logged ? 'logged' : 'skip', $logged ? 'بحث REST' : 'فشل الحفظ');
+        } catch (\Throwable $e) {
+            try {
+                $this->debug_note('rest_store_api', '', 0, 'skip', 'استثناء: ' . substr($e->getMessage(), 0, 60));
+            } catch (\Exception $inner) {
+                // تجاهل
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * الالتقاط الرئيسي على template_redirect (أولوية 5 قبل أي تحويل)
      * يسجل كل عمليات بحث الصفحة: مع النتائج (results_count > 0) وبدونها (0)
      * — يجعل "Total Searches" ومعدل الفشل مؤشرين حقيقيين
      */
     public function capture_search_query_on_template()
     {
-        if (self::$logged_this_request || !is_search() || !function_exists('WC')) {
+        if (!is_search() || !function_exists('WC') || is_admin()) {
+            return; // ليست صفحة بحث — لا نكتب شيئًا
+        }
+
+        $term = get_search_query(false);
+
+        if (self::$logged_this_request) {
+            $this->debug_note('template_redirect', $term, 0, 'skip', 'سبق التسجيل في نفس الطلب');
             return;
         }
-        if (is_admin()) {
+        if (!$term) {
+            $this->debug_note('template_redirect', '', 0, 'skip', 's فارغ');
             return;
         }
 
-        // تأكد أن البحث على المنتجات فقط
-        if (!is_post_type_archive('product') && !is_shop()) {
-            // فحص إن كان البحث يتضمن منتجات
-            $query = get_query_var('post_type');
-            if ($query !== 'product' && !empty($query)) {
+        // نطاق البحث: منتجات مباشرة أم بحث عام؟
+        $qtype = get_query_var('post_type');
+        $scope = 'generic';
+
+        if (is_array($qtype)) {
+            if (!in_array('product', $qtype, true)) {
+                $this->debug_note('template_redirect', $term, 0, 'skip', 'post_type مصفوفة بلا product');
                 return;
             }
-        }
-
-        $term = get_search_query();
-        if (!$term) {
+            $scope = 'product';
+        } elseif ('product' === $qtype) {
+            $scope = 'product';
+        } elseif ('' !== $qtype && 'any' !== $qtype) {
+            $this->debug_note('template_redirect', $term, 0, 'skip', 'post_type=' . sanitize_text_field((string) $qtype) . ' لا يشمل المنتجات');
             return;
         }
 
@@ -306,6 +444,18 @@ class WZSI_Tracker
         global $wp_query;
         $found = ($wp_query instanceof WP_Query) ? (int) $wp_query->found_posts : 0;
 
-        $this->log_search($term, $found, 0);
+        // البحث العام: نعدّ المنتجات فقط لضمان دقة "الصفرية"
+        if ('generic' === $scope) {
+            $found = $this->count_product_results($term);
+        }
+
+        $logged = $this->log_search($term, $found, 0);
+        $this->debug_note(
+            'template_redirect',
+            $term,
+            $found,
+            $logged ? 'logged' : 'skip',
+            $logged ? ('scope=' . $scope) : 'should_log رفض (إعدادات)'
+        );
     }
 }
