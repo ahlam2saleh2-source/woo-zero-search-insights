@@ -50,7 +50,7 @@ $row_count = $table_exists ? (int) $wpdb->get_var("SELECT COUNT(*) FROM {$table}
         <h2>⚙️ Settings</h2>
         <table class="form-table">
             <tr><th>Theme</th><td><code><?php echo esc_html($settings['theme'] ?? 'light'); ?></code></td></tr>
-            <tr><th>UI Language</th><td><code><?php echo esc_html($settings['ui_lang'] ?? 'ar'); ?></code></td></tr>
+            <tr><th>UI Language</th><td><code><?php echo esc_html($settings['ui_lang'] ?? (function_exists('wzsi_default_ui_lang') ? wzsi_default_ui_lang() : 'ar')); ?></code></td></tr>
             <tr><th>Tracking Enabled</th><td><code><?php echo !empty($settings['enabled']) ? '1' : '0'; ?></code></td></tr>
             <tr><th>Slack Enabled</th><td><code><?php echo !empty($settings['slack_enabled']) ? '1' : '0'; ?></code></td></tr>
             <tr><th>Discord Enabled</th><td><code><?php echo !empty($settings['discord_enabled']) ? '1' : '0'; ?></code></td></tr>

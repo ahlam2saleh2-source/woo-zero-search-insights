@@ -30,6 +30,22 @@ define('WZSI_DB_TABLE',           'woo_zero_search_logs');
 define('WZSI_NONCE_ACTION',       'wzsi_admin_nonce');
 define('WZSI_CAP',                'manage_woocommerce');
 
+// ════════════ دالة اللغة الافتراضية الذكية ════════════
+// تكتشف لغة الموقع تلقائيًا عند أول تفعيل (عربي للمواقع العربية، إنجليزي لغيرها)
+// ويبقى الاختيار اليدوي من الإعدادات محفوظًا وله الأولوية دائمًا
+function wzsi_default_ui_lang() {
+    return (strpos(get_locale(), 'ar') === 0) ? 'ar' : 'en';
+}
+
+// ════════════ إعلان توافق ميزات WooCommerce ════════════
+// الإضافة للقراءة فقط (لا تمس الطلبات ولا السلة) — نعلن التوافق رسميًا لإزالة تحذير وووكومرس
+add_action('before_woocommerce_init', function () {
+    if (class_exists(\Automattic\WooCommerce\Utilities\FeaturesUtil::class)) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__, true);
+    }
+});
+
 // ════════════ Autoloader ════════════
 spl_autoload_register(function ($class) {
     $prefix = 'WZSI_';
