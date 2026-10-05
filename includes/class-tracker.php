@@ -1,8 +1,8 @@
 <?php
 /**
- * فئة المتتبع - تلتقط عمليات البحث في WooCommerce التي لا ترجع نتائج
+ * فئة المتتبع - تلتقط كل عمليات البحث في WooCommerce (مع النتائج وبدونها)
  *
- * @package Woo_Zero_Search_Miner
+ * @package Woo_Zero_Search_Insights
  */
 
 if (!defined('ABSPATH')) {
@@ -12,6 +12,12 @@ if (!defined('ABSPATH')) {
 class WZSI_Tracker
 {
     private static $instance = null;
+
+    /**
+     * قفل ضد التسجيل المزدوج لنفس الطلب
+     * (template_redirect + woocommerce_no_products_found قد يعملان معًا على نفس البحث)
+     */
+    private static $logged_this_request = false;
 
     public static function instance()
     {
@@ -23,18 +29,15 @@ class WZSI_Tracker
 
     private function __construct()
     {
-        // الخطاف الرئيسي: عند عرض صفحة "لا توجد منتجات"
+        // الاحتياط الأول: عند عرض صفحة "لا توجد منتجات" (لا يسجل إن سبق الالتقاط)
         add_action('woocommerce_no_products_found', array($this, 'capture_zero_search'), 10);
         add_action('woocommerce_shortcode_no_products', array($this, 'capture_shortcode_no_products'), 10, 1);
 
-        // تتبع AJAX search (WooCommerce Blocks + AJAX)
+        // تتبع AJAX search (WooCommerce Blocks + AJAX) — صفرية فقط لتجنب تضخيم السجل بكل ضغطة حرف
         add_action('wc_ajax_woocommerce_ajax_search', array($this, 'maybe_capture_ajax_search'), 5);
 
-        // تتبع نتائج البحث بشكل عام
+        // الالتقاط الرئيسي: كل عمليات بحث الصفحة (مع النتائج وبدونها)
         add_action('template_redirect', array($this, 'capture_search_query_on_template'), 100);
-
-        // تخزين مؤقت لعدد نتائج آخر بحث
-        add_filter('woocommerce_product_query', array($this, 'capture_query_count'), 100);
     }
 
     /**
@@ -166,9 +169,9 @@ class WZSI_Tracker
     }
 
     /**
-     * تسجيل عملية البحث بدون نتائج
+     * تسجيل عملية بحث (مع نتائج أو بدونها) — النقطة المركزية للتسجيل
      */
-    private function log_zero_search($term, $is_ajax = 0)
+    private function log_search($term, $results_count, $is_ajax = 0)
     {
         if (!$this->should_log($term, $is_ajax)) {
             return;
@@ -178,7 +181,7 @@ class WZSI_Tracker
 
         WZSI_Database::insert_log(array(
             'search_term'   => sanitize_text_field($term),
-            'results_count' => 0,
+            'results_count' => max(0, (int) $results_count),
             'is_ajax'        => $is_ajax,
             'user_id'        => $user_info['user_id'],
             'user_ip'        => $user_info['user_ip'],
@@ -186,14 +189,25 @@ class WZSI_Tracker
             'referer'         => $user_info['referer'],
             'language'        => $user_info['language'],
         ));
+
+        self::$logged_this_request = true;
+    }
+
+    /**
+     * تسجيل عملية بحث بدون نتائج (results_count = 0)
+     */
+    private function log_zero_search($term, $is_ajax = 0)
+    {
+        $this->log_search($term, 0, $is_ajax);
     }
 
     /**
      * التقاط خطاف woocommerce_no_products_found
+     * يعمل كاحتياط فقط — لا يسجل إن سبق الالتقاط في نفس الطلب
      */
     public function capture_zero_search()
     {
-        if (!is_search() || !function_exists('WC')) {
+        if (self::$logged_this_request || !is_search() || !function_exists('WC')) {
             return;
         }
         $term = get_search_query();
@@ -204,10 +218,13 @@ class WZSI_Tracker
     }
 
     /**
-     * التقاط Shortcode بدون نتائج
+     * التقاط Shortcode بدون نتائج (احتياط — يلتقط ما لا يغطيه template_redirect)
      */
     public function capture_shortcode_no_products($query)
     {
+        if (self::$logged_this_request) {
+            return;
+        }
         if (!is_a($query, 'WC_Query') && !is_object($query)) {
             return;
         }
@@ -219,7 +236,7 @@ class WZSI_Tracker
     }
 
     /**
-     * التقاط AJAX Search
+     * التقاط AJAX Search — صفرية فقط (كل ضغطة حرف في البحث الفوري لا تُسجل كبحث ناجح)
      */
     public function maybe_capture_ajax_search()
     {
@@ -248,7 +265,7 @@ class WZSI_Tracker
                 ),
             ),
         );
-        $args = apply_filters('wzsm_ajax_search_args', $args, $term);
+        $args = apply_filters('wzsi_ajax_search_args', $args, $term);
 
         $results = get_posts($args);
 
@@ -258,11 +275,13 @@ class WZSI_Tracker
     }
 
     /**
-     * التقاط على template_redirect - للقوالب المخصصة
+     * الالتقاط الرئيسي على template_redirect
+     * يسجل كل عمليات بحث الصفحة: مع النتائج (results_count > 0) وبدونها (0)
+     * — يجعل "Total Searches" ومعدل الفشل مؤشرين حقيقيين
      */
     public function capture_search_query_on_template()
     {
-        if (!is_search() || !function_exists('WC')) {
+        if (self::$logged_this_request || !is_search() || !function_exists('WC')) {
             return;
         }
         if (is_admin()) {
@@ -283,22 +302,10 @@ class WZSI_Tracker
             return;
         }
 
-        // فحص عدد نتائج WP_Query الحالي
+        // عدد النتائج الفعلي للاستعلام الرئيسي (0 = بلا نتائج)
         global $wp_query;
-        if ($wp_query && $wp_query->have_posts() === false) {
-            // لا نتائج
-            $this->log_zero_search($term, 0);
-        }
-    }
+        $found = ($wp_query instanceof WP_Query) ? (int) $wp_query->found_posts : 0;
 
-    /**
-     * عند تنفيذ استعلام منتج WooCommerce
-     * يخزن عدد النتائج لمقارنة لاحقة
-     */
-    public function capture_query_count($query)
-    {
-        // نوفر فرصة لاستخدام هذا لاحقاً لتتبع عمليات البحث التي ترجع نتائج أيضاً
-        // حالياً نكتفي بـ no_products_found
-        return $query;
+        $this->log_search($term, $found, 0);
     }
 }
