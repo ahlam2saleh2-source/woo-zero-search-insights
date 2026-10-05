@@ -3,7 +3,7 @@
  * Plugin Name:       Woo Zero Search Insights
  * Plugin URI:        https://github.com/ahlam2saleh2-source/woo-zero-search-insights
  * Description:       تتبع عمليات البحث في WooCommerce التي لا تُرجع نتائج، مع لوحة إحصائيات احترافية، تصدير CSV، Dashboard Widget، إشعارات Slack/Discord، شريط تنقل Tabs، 6 مواضيع (Light/Dark/Ocean/Forest/Sunset/Midnight)، دعم عربي/إنجليزي كامل، White-label.
- * Version:           12.0.3
+ * Version:           1.0.0
  * Author:            az-soft4media
  * Author URI:        https://troyawin.tech
  * Text Domain:       woo-zero-search-insights
@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
 }
 
 // ════════════ التعريفات ════════════
-define('WZSI_VERSION',           '12.0.3');
+define('WZSI_VERSION',           '1.0.0');
 define('WZSI_PLUGIN_FILE',        __FILE__);
 define('WZSI_PLUGIN_DIR',         plugin_dir_path(__FILE__));
 define('WZSI_PLUGIN_URL',         plugin_dir_url(__FILE__));

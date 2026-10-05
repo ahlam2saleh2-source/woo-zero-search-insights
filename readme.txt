@@ -1,6 +1,6 @@
 === Woo Zero Search Insights ===
-Contributors: alialiapoeskndr987
-Tags: woocommerce, search, analytics, zero results, ecommerce
+Contributors: azsoft4media
+Tags: woocommerce, search, analytics, zero results, ecommerce, insights
 Requires at least: 5.6
 Tested up to: 6.5
 Requires PHP: 7.4
@@ -10,80 +10,106 @@ Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-اكتشف ما يبحث عنه عملاؤك دون أن يجدوه. تسجّل عمليات البحث في WooCommerce التي لا تُرجع نتائج، مع لوحة إحصائيات احترافية وتصدير CSV.
+Discover what your customers search for — and never find. Full description in English & Arabic below.
 
 == Description ==
 
-**Woo Zero Search Insights** إضافة قوية لمتاجر WooCommerce تساعدك على فهم سلوك عملائك من خلال تتبع عمليات البحث التي لا تُرجع أي نتائج. هذه البيانات الذهبية تكشف لك:
+= English =
+
+**Woo Zero Search Insights** helps WooCommerce store owners understand real customer demand by tracking every search that returns zero results. This "golden data" reveals:
+
+* Products your customers want but you don't sell yet — direct inventory opportunities.
+* Keywords worth real marketing or SEO effort.
+* The exact terms and local phrasing your audience actually uses.
+
+**Key features**
+
+* **Automatic tracking** — captures every failed WooCommerce search (standard + AJAX live search) with zero configuration.
+* **Professional dashboard** — stat cards, daily trend chart, and a ranked table of top zero-result terms.
+* **Full search log** — every query recorded with anonymized IP, device type, timestamp, and request type.
+* **CSV export** — full or filtered export with UTF-8 BOM, Excel-ready and Arabic-safe.
+* **Slack & Discord webhooks** — instant alerts when search gaps appear.
+* **Flexible settings** — min/max term length, retention window, excluded terms, members/guests tracking.
+* **Automatic cleanup** — daily scheduled task removes logs older than your retention period.
+* **Privacy-first** — IP anonymization enabled by default (GDPR-friendly).
+* **Instant actions** — delete a term or clear everything via AJAX, no page reloads.
+* **6 admin themes** — Light / Dark / Ocean / Forest / Sunset / Midnight, plus full white-label support.
+* **Bilingual** — complete Arabic & English interfaces, translation-ready (.pot included).
+* **Multisite compatible.**
+
+= العربية =
+
+**Woo Zero Search Insights** إضافة لمتاجر WooCommerce تساعدك على فهم سلوك عملائك من خلال تتبع عمليات البحث التي لا تُرجع أي نتائج. هذه البيانات الذهبية تكشف لك:
 
 * ما المنتجات التي يبحث عنها عملاؤك ولا تبيعها (فرص لتوسيع المخزون).
-* أي الكلمات المفتاحية تستحق جهداً تسويقياً أو SEO.
-* ما المصطلحات الفنية أو اللهجية المحلية التي تستخدمها جمهورك.
+* أي الكلمات المفتاحية تستحق جهدًا تسويقيًا أو SEO.
+* ما المصطلحات الفنية أو اللهجية المحلية التي يستخدمها جمهورك فعليًا.
 
-### المزايا الرئيسية
+**المزايا الرئيسية**
 
-* **تتبع تلقائي**: يلتقط كل عمليات البحث في WooCommerce (عادية و AJAX) بدون تدخل يدوي.
+* **تتبع تلقائي**: يلتقط كل عمليات البحث في WooCommerce (العادية و AJAX) بدون أي إعداد مسبق.
 * **لوحة معلومات احترافية**: بطاقات إحصائية ورسوم بيانية للاتجاه اليومي.
-* **جدول أعلى المصطلحات بلا نتائج**: مرتب حسب التكرار، مع معلومات آخر مرة بحث.
-* **سجل كامل**: كل عملية بحث مسجلة مع IP مجهول، نوع الجهاز، تاريخ، نوع الطلب.
-* **تصدير CSV**: تصدير كامل أو مفلتر للسجلات (مع UTF-8 BOM لدعم Excel للعربية).
-* **إعدادات مرنة**: تحكم في الطول الأدنى/الأقصى، مدة الاحتفاظ، استثناء مصطلحات، تتبع مسجلين/زوار.
+* **جدول أعلى المصطلحات بلا نتائج**: مرتب حسب التكرار مع آخر مرة بحث.
+* **سجل كامل**: كل عملية بحث مع IP مجهول ونوع الجهاز والتاريخ ونوع الطلب.
+* **تصدير CSV**: تصدير كامل أو مفلتر بترميز UTF-8 BOM متوافق مع Excel والعربية.
+* **إشعارات Slack/Discord**: تنبيه فوري عند ظهور فجوات بحث جديدة.
+* **إعدادات مرنة**: الطول الأدنى/الأقصى، مدة الاحتفاظ، استثناء مصطلحات، تتبع المسجلين/الزوار.
 * **تنظيف تلقائي**: مهمة cron يومية تحذف السجلات الأقدم من المدة المحددة.
-* **خصوصية**: إخفاء آخر أجزاء IP اختيارياً (متوافق مع GDPR).
-* **AJAX سريع**: حذف مصطلح أو تفريغ الكل بنقرة، دون إعادة تحميل الصفحة.
-* **متعدد اللغات**: جاهز للترجمة (.pot متضمن).
-* **متعدد المواقع**: يعمل على Multi-site.
-
-### التثبيت
-
-1. ارفع مجلد `woo-zero-search-insights` إلى `wp-content/plugins/`.
-2. فعّل WooCommerce.
-3. فعّل Woo Zero Search Insights من صفحة الإضافات.
-4. اذهب إلى: لوحة التحكم → Zero Search → لوحة المعلومات.
-5. ابدأ بمراقبة عمليات البحث بلا نتائج!
+* **خصوصية**: إخفاء أجزاء من IP مفعّل افتراضيًا (متوافق مع GDPR).
+* **إجراءات فورية**: حذف مصطلح أو تفريغ الكل عبر AJAX دون إعادة تحميل الصفحة.
+* **6 ثيمات للوحة التحكم** (Light/Dark/Ocean/Forest/Sunset/Midnight) + دعم White-label كامل.
+* **متعدد اللغات**: جاهز للترجمة (.pot متضمن) ويعمل على شبكات Multi-site.
 
 == Installation ==
 
-1. ارفع مجلد الإضافة إلى `wp-content/plugins/`.
-2. فعّل WooCommerce إن لم يكن مفعّلاً.
-3. فعّل الإضافة من خلال قائمة الإضافات في ووردبريس.
-4. اذهب إلى Zero Search في القائمة الجانبية.
+1. Upload the `woo-zero-search-insights` folder to `wp-content/plugins/` — or upload the zip file via Plugins → Add New → Upload.
+   (ارفع مجلد الإضافة أو ملف zip من صفحة الإضافات في ووردبريس)
+2. Activate WooCommerce if it is not already active. (فعّل WooCommerce إن لم يكن مفعّلًا)
+3. Activate "Woo Zero Search Insights" from the Plugins page. (فعّل الإضافة من صفحة الإضافات)
+4. Go to: Dashboard → Zero Search → Dashboard/لوحة المعلومات.
+5. Start monitoring your zero-result searches! (ابدأ بمراقبة عمليات البحث بلا نتائج)
 
 == Frequently Asked Questions ==
 
-= هل تخزن IP العملاء كاملاً؟ =
-لا بشكل افتراضي. الإضافة تخفي آخر أجزاء من IP (آخر أوكتيت في IPv4) للحفاظ على الخصوصية. يمكنك تعطيل هذه الميزة من الإعدادات.
+= Do you store customers' full IPs? / هل تُخزَّن عناوين IP كاملة؟ =
+No, not by default. The plugin masks the last part of the IP (last octet in IPv4) for privacy. You can change this behavior in settings.
+لا بشكل افتراضي — تخفي الإضافة آخر جزء من IP حفاظًا على الخصوصية، ويمكن تعديل ذلك من الإعدادات.
 
-= هل تتبع عمليات AJAX Search؟ =
-نعم، الإضافة تلتقط عمليات البحث عبر AJAX (مثل Live Search في بعض القوالب) بالإضافة إلى البحث العادي.
+= Does it track AJAX / live search? / هل تتبع البحث الفوري AJAX؟ =
+Yes. Live search requests via AJAX are captured along with standard search queries.
+نعم — تلتقط الإضافة عمليات البحث الفوري عبر AJAX إضافة إلى البحث العادي.
 
-= هل تتعارض مع إضافات SEO أو البحث؟ =
-لا. الإضافة تستمع إلى خطافات WooCommerce القياسية (`woocommerce_no_products_found`, `template_redirect`) دون تعديل على نتائج البحث.
+= Does it conflict with SEO or search plugins? / هل تتعارض مع إضافات SEO أو البحث؟ =
+No. It listens to standard WooCommerce hooks (`woocommerce_no_products_found`, `template_redirect`) without modifying search results at all.
+لا — تستمع إلى خطافات WooCommerce القياسية دون أي تعديل على نتائج البحث.
 
-= كيف أصدّر البيانات؟ =
-من لوحة المعلومات، اضغط "تصدير CSV" أو من صفحة السجلات اضغط زر التصدير. يتم تنزيل ملف CSV متوافق مع Excel.
+= How do I export the data? / كيف أصدّر البيانات؟ =
+Click "Export CSV" on the dashboard or on the logs page — you get an Excel-compatible file.
+اضغط "تصدير CSV" من لوحة المعلومات أو صفحة السجلات وستحصل على ملف متوافق مع Excel.
 
-= هل تحذف البيانات عند تعطيل الإضافة؟ =
-لا. التعطيل يحذف فقط مهام الكرون. الجدول والسجلات تبقى. عند الإزالة الكاملة (Uninstall)، تُحذف كل البيانات.
+= Is my data deleted when I deactivate the plugin? / هل تُحذف البيانات عند تعطيل الإضافة؟ =
+No. Deactivation only removes scheduled tasks; your data stays intact. Full uninstall (delete) removes everything.
+لا — التعطيل يزيل مهام الجدولة فقط وتبقى بياناتك، والحذف الكامل من صفحة الإضافات يمسح كل شيء.
 
 == Screenshots ==
 
-1. لوحة المعلومات - بطاقات إحصائية واتجاه يومي.
-2. جدول أعلى عمليات البحث بلا نتائج.
-3. صفحة السجلات الكاملة.
-4. صفحة الإعدادات.
+1. Dashboard — stat cards and daily trend. / لوحة المعلومات — بطاقات إحصائية واتجاه يومي.
+2. Top zero-result search terms. / جدول أعلى المصطلحات بلا نتائج.
+3. Full search logs. / سجل عمليات البحث الكامل.
+4. Settings page. / صفحة الإعدادات.
 
 == Changelog ==
 
 = 1.0.0 =
-* الإصدار الأول.
-* تتبع عمليات البحث بلا نتائج.
-* لوحة معلومات احترافية مع رسوم بيانية.
-* تصدير CSV.
-* إعدادات شاملة.
-* تنظيف تلقائي مجدول.
+* First public release. / الإصدار العام الأول.
+* Zero-result search tracking (standard + AJAX).
+* Professional dashboard with charts and stat cards.
+* CSV export (Excel & Arabic-safe).
+* Slack & Discord webhooks.
+* 6 admin themes + white-label support.
+* Comprehensive settings, scheduled cleanup, GDPR-friendly IP masking.
 
 == Upgrade Notice ==
 
 = 1.0.0 =
-الإصدار الأول - استمتع!
+Initial release. / الإصدار الأول.
