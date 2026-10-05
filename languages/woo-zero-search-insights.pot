@@ -17,7 +17,7 @@ msgid "Woo Zero Search Insights"
 msgstr ""
 
 #. Plugin Description
-msgid "اكتشف ما يبحث عنه عملاؤك دون أن يجدوه. تسجّل الإضافة عمليات البحث في WooCommerce التي لا تُرجع نتائج، مع لوحة إحصائيات احترافية وتصدير CSV وميزات تنظيف تلقائي."
+msgid "Track WooCommerce searches that return no results. Analytics dashboard, CSV export, Slack/Discord alerts, 6 admin themes, AR/EN, white-label."
 msgstr ""
 
 #. Author
