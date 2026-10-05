@@ -27,7 +27,7 @@ class WZSI_i18n
     private function __construct()
     {
         $settings = get_option('wzsi_settings', array());
-        $this->current_lang = isset($settings['ui_lang']) ? $settings['ui_lang'] : 'ar';
+        $this->current_lang = isset($settings['ui_lang']) ? $settings['ui_lang'] : (function_exists('wzsi_default_ui_lang') ? wzsi_default_ui_lang() : 'ar');
         $this->load_strings();
     }
 

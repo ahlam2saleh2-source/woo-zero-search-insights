@@ -48,7 +48,7 @@ class WZSI_Settings
             'dark_mode'            => 0,
             'white_label'          => 0,
             'theme'                => 'light',
-            'ui_lang'              => 'ar',
+            'ui_lang'              => function_exists('wzsi_default_ui_lang') ? wzsi_default_ui_lang() : 'ar',
         );
     }
 
@@ -165,7 +165,8 @@ class WZSI_Settings
         $sanitized['white_label']          = !empty($input['white_label']) ? 1 : 0;
         $allowed_themes = array('light', 'dark', 'ocean', 'forest', 'sunset', 'midnight');
         $sanitized['theme']                = in_array($input['theme'] ?? 'light', $allowed_themes, true) ? $input['theme'] : 'light';
-        $sanitized['ui_lang']              = in_array($input['ui_lang'] ?? 'ar', array('ar', 'en'), true) ? $input['ui_lang'] : 'ar';
+        $default_lang = function_exists('wzsi_default_ui_lang') ? wzsi_default_ui_lang() : 'ar';
+        $sanitized['ui_lang']              = in_array($input['ui_lang'] ?? $default_lang, array('ar', 'en'), true) ? $input['ui_lang'] : $default_lang;
         return $sanitized;
     }
 
@@ -223,7 +224,7 @@ class WZSI_Settings
     public function render_lang_selector($args)
     {
         $options = get_option('wzsi_settings', self::get_defaults());
-        $current = isset($options['ui_lang']) ? $options['ui_lang'] : 'ar';
+        $current = isset($options['ui_lang']) ? $options['ui_lang'] : (function_exists('wzsi_default_ui_lang') ? wzsi_default_ui_lang() : 'ar');
         $langs = array('ar' => wzsi_t('lang_arabic'), 'en' => wzsi_t('lang_english'));
         echo '<select name="wzsi_settings[' . esc_attr($args['key']) . ']">';
         foreach ($langs as $code => $name) {

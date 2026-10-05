@@ -108,6 +108,8 @@ No. Deactivation only removes scheduled tasks; your data stays intact. Full unin
 * Slack & Discord webhooks.
 * 6 admin themes + white-label support.
 * Comprehensive settings, scheduled cleanup, GDPR-friendly IP masking.
+* Official WooCommerce compatibility declarations (HPOS / custom order tables + Cart & Checkout Blocks).
+* UI language auto-detects the site language on first activation (Arabic/English), with manual override in settings.
 
 == Upgrade Notice ==
 
