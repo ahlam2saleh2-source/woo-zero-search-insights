@@ -103,6 +103,7 @@ No. Deactivation only removes scheduled tasks; your data stays intact. Full unin
 = 1.0.0 =
 * First public release. / الإصدار العام الأول.
 * Zero-result search tracking (standard + AJAX).
+* Total Searches counts every search: results pages, instant/AJAX search and Store API — with a real failure rate.
 * Professional dashboard with charts and stat cards.
 * CSV export (Excel & Arabic-safe).
 * Slack & Discord webhooks.

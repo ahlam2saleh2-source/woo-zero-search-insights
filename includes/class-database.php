@@ -122,6 +122,65 @@ class WZSI_Database
     }
 
     /**
+     * حفظ عملية بحث فورية (AJAX / REST) مع دمج دفعة الكتابة
+     *
+     * ضغطات الكتابة المتتالية لنفس المستخدم خلال دقيقتين ("sh" ثم "shi" ثم "shirt")
+     * تُدمج في سجل واحد يُحدَّث لمصطلحها الأخير وعدد نتائجه الحقيقي،
+     * فلا يتضخم السجل ولا تضيع عمليات البحث الناجحة.
+     *
+     * @param array $data بيانات البحث
+     * @return int|false معرف السجل أو false عند الفشل
+     */
+    public static function log_ajax_search($data)
+    {
+        global $wpdb;
+        $table_name = self::table_name();
+
+        $normalized = self::normalize_term($data['search_term']);
+        $ip = isset($data['user_ip']) ? (string) $data['user_ip'] : '';
+
+        if ('' !== $ip) {
+            $prev = $wpdb->get_row($wpdb->prepare(
+                "SELECT id, search_term_normalized FROM {$table_name}
+                 WHERE user_ip = %s AND is_ajax = 1
+                   AND searched_at > DATE_SUB(NOW(), INTERVAL 120 SECOND)
+                 ORDER BY id DESC
+                 LIMIT 1",
+                $ip
+            ));
+
+            if ($prev && !empty($prev->search_term_normalized)) {
+                $prev_norm = (string) $prev->search_term_normalized;
+                // نفس دفعة الكتابة: المصطلح الجديد امتداد للسابق أو العكس (تصحيح Backspace)
+                $same_burst = (0 === strpos($normalized, $prev_norm))
+                    || (0 === strpos($prev_norm, $normalized));
+
+                if ($same_burst) {
+                    $wpdb->query($wpdb->prepare(
+                        "UPDATE {$table_name}
+                         SET search_term = %s,
+                             search_term_normalized = %s,
+                             results_count = %d,
+                             searched_at = NOW(),
+                             last_occurrence = NOW(),
+                             occurrence_count = occurrence_count + 1
+                         WHERE id = %d",
+                        sanitize_text_field($data['search_term']),
+                        $normalized,
+                        max(0, (int) $data['results_count']),
+                        (int) $prev->id
+                    ));
+                    return (int) $prev->id;
+                }
+            }
+        }
+
+        // دفعة جديدة — إدراج عادي عبر المسار الموحد
+        $data['is_ajax'] = 1;
+        return self::insert_log($data);
+    }
+
+    /**
      * تطبيع مصطلح البحث (للتجميع)
      *
      * @param string $term
