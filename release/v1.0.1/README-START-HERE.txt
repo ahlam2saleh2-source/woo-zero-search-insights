@@ -61,7 +61,7 @@ Package contents:
        Upload in numbered order right after the cover
 
   4. docs/installation-user-guide-AR-EN.pdf
-     ← 14-page illustrated bilingual user guide: step-by-step install,
+     ← 16-page illustrated bilingual user guide: step-by-step install,
        every setting explained, webhooks, privacy, FAQ, troubleshooting
        ← Attach this as a digital download on your Gumroad product
 

@@ -12,7 +12,7 @@
 | `woo-zero-search-insights-1.0.1.zip` | Installable plugin zip — ملف الإضافة الجاهز للتثبيت: Plugins → Add New → Upload Plugin |
 | `woo-zero-search-insights-v1.0.1-package.zip` | Complete sales package — الحزمة الكاملة لـ Gumroad (كل ما دونها مضغوط داخلها) |
 | `screenshots/` (6 files) | Product screenshots: dashboard, top terms, logs, Arabic RTL, settings — لقطات المنتج |
-| `docs/installation-user-guide-AR-EN.pdf` | 14-page bilingual installation & user guide — دليل التثبيت والاستخدام (عربي + إنجليزي) |
+| `docs/installation-user-guide-AR-EN.pdf` | 16-page bilingual installation & user guide — دليل التثبيت والاستخدام (عربي + إنجليزي) |
 | `docs/CHANGELOG-1.0.1.txt` | Full changelog — سجل التغييرات الكامل |
 | `docs/LICENSE-GPLv2.txt` | GPLv2 license — نص الترخيص |
 | `marketing/gumroad-listing-kit-AR-EN.pdf` | Ready-to-paste Gumroad listing copy (AR + EN) — نصوص صفحة البيع جاهزة للنسخ |
