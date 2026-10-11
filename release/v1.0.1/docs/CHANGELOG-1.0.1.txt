@@ -1,0 +1,59 @@
+Woo Zero Search Insights — Changelog / سجل التغييرات
+════════════════════════════════════════════════════════════
+
+= 1.0.1 — 2026-10-12 =
+
+EN — Fixes:
+* Slack & Discord webhooks now actually fire (the hook was never triggered).
+* Webhook message strings were missing from the translations dictionary.
+* Fatal error on sites without WooCommerce (translation helper loaded too late).
+* Uninstall clears the correct scheduled task (wzsm_daily_cleanup) and cleans
+  all sites on Multisite, including debug options and notification transients.
+* Duplicate AJAX handlers caused double confirmations and double requests.
+* CREATE INDEX error on MySQL hosts (MariaDB-only syntax).
+* Repeated searches now update results_count — a term flips out of "zero"
+  as soon as a matching product exists.
+* Unique-terms counters display their numbers on stat cards.
+* Admin footer version line now visible and respects white-label.
+
+EN — Improvements:
+* Chart.js bundled locally (no external CDN required).
+* CSV headers and AJAX messages follow the interface language (AR/EN).
+* Slack/Discord alerts throttled to one per term per hour (no spam).
+* Capture debug trail is now opt-in in Settings (performance: no per-search
+  option writes; stored with autoload off).
+* Excluded-terms matching is multibyte-safe (Arabic).
+* Premium UI toggle now works from Settings.
+* readme.txt: full 6-screenshot list, Tested up to WordPress 6.8 /
+  WooCommerce 10.1.
+
+العربية — إصلاحات:
+* إشعارات Slack/Discord تعمل الآن فعلياً (كان الخطاف لا يُطلق أبداً).
+* إضافة مفاتيح نصوص الإشعارات المفقودة من قاموس الترجمة.
+* إصلاح خطأ فادح في المواقع بدون WooCommerce (تحميل نظام الترجمة متأخراً).
+* الحذف يمسح الجدولة الصحيحة وكل مواقع الشبكة Multisite مع الخيارات
+  وسجلات الإشعارات المؤقتة.
+* إصلاح تكرار معالجات AJAX الذي كان يسبب طلبات مزدوجة.
+* إصلاح خطأ إنشاء الفهرس على استضافات MySQL (صيغة كانت خاصة بـ MariaDB).
+* البحث المتكرر يحدّث عدد النتائج — يخرج المصطلح من "الصفرية" فور توفر منتج مطابق.
+* بطاقات الإحصائيات تعرض عدد المصطلحات الفريدة.
+* تذييل الإصدار يظهر الآن ويحترم خيار White-label.
+
+العربية — تحسينات:
+* تضمين Chart.js محلياً دون الحاجة لـ CDN خارجي.
+* ترويسات CSV ورسائل AJAX تتبع لغة الواجهة (عربي/إنجليزي).
+* إشعار واحد كحد أقصى لكل مصطلح في الساعة (لا سبام).
+* سجل التشخيص يُفعّل من الإعدادات (أداء أفضل: بلا كتابة عند كل بحث).
+* فحص المصطلحات المستثناة آمن مع العربية (multibyte).
+* مفتاح واجهة Premium يعمل من الإعدادات.
+* تحديث ملف readme.txt بقائمة اللقطات الست وأحدث النسخ المتوافقة.
+
+= 1.0.0 — Initial release =
+* Zero-result search tracking (standard + AJAX + Store API + fallback).
+* Total Searches counts every search — with a real failure rate.
+* Professional dashboard with charts and stat cards.
+* CSV export (Excel & Arabic-safe UTF-8 BOM).
+* Slack & Discord webhooks. 6 admin themes + white-label.
+* Comprehensive settings, scheduled cleanup, GDPR-friendly IP masking.
+* Official WooCommerce HPOS + Cart/Checkout Blocks compatibility.
+* UI language auto-detects the site language on first activation.

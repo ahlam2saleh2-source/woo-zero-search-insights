@@ -20,6 +20,9 @@ Thumbs.db
 *.zip
 *.tar.gz
 
+# Exception: release deliverables are intentional downloads
+!release/**/*.zip
+
 # Node
 node_modules/
 package-lock.json
