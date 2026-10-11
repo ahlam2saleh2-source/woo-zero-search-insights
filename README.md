@@ -17,6 +17,7 @@ Track every WooCommerce search that returns **zero results** — and turn missed
 | [woo-zero-search-insights-1.0.1.zip](release/v1.0.1/woo-zero-search-insights-1.0.1.zip) | Installable plugin — ملف الإضافة الجاهز للتثبيت المباشر (Plugins → Add New → Upload Plugin) |
 | [woo-zero-search-insights-v1.0.1-package.zip](release/v1.0.1/woo-zero-search-insights-v1.0.1-package.zip) | Full sales package — الحزمة الكاملة: الإضافة + 6 لقطات شاشة + أدلة PDF ثنائية اللغة + مواد التسويق |
 | [GitHub Releases](../../releases/tag/v1.0.1) | All release assets in one page — كل ملفات الإصدار في صفحة واحدة |
+| [🗺️ ROADMAP.md](ROADMAP.md) | Next version plan (v1.1.0) — what's coming & how — خطة النسخة القادمة: ماذا سنضيف وكيف ستنفّذ |
 
 **Docs & guides / المستندات والأدلة:** [release/v1.0.1/](release/v1.0.1) · [Installation & user guide AR/EN (PDF)](release/v1.0.1/docs/installation-user-guide-AR-EN.pdf) · [CHANGELOG](release/v1.0.1/docs/CHANGELOG-1.0.1.txt) · [Start here / ابدأ من هنا](release/v1.0.1/README-START-HERE.txt)
 
