@@ -55,15 +55,20 @@ class WZSI_Core
 
     /**
      * إضافة معلومات الإصدار في الـ footer (اختياري)
+     * الإصلاح: كان الفحص يبحث عن 'wzsm' بينما معرفات الشاشات تحمل 'wzsi' — التذييل لم يكن يظهر أبدًا.
+     * ويحترم الآن إعداد White-label (إخفاء العلامة التجارية).
      */
     public function maybe_add_admin_footer()
     {
         $screen = get_current_screen();
-        if ($screen && strpos($screen->id, 'wzsm') !== false) {
+        if ($screen && strpos($screen->id, 'wzsi') !== false) {
+            $settings = get_option('wzsi_settings', array());
+            if (!empty($settings['white_label'])) {
+                return; // White-label: إخفاء تذييل العلامة
+            }
             echo '<p style="text-align:center; color:#666; margin-top:20px;">';
             printf(
-                /* translators: %s: plugin version */
-                esc_html__('Woo Zero Search Insights — الإصدار %s | صنع بحب لمجتمع WooCommerce العربي', 'woo-zero-search-insights'),
+                esc_html(wzsi_t('footer_made_by')),
                 esc_html(WZSI_VERSION)
             );
             echo '</p>';

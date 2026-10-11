@@ -36,6 +36,12 @@ class WZSI_Premium_UI
 
     private function __construct()
     {
+        // الإصلاح: إعداد premium_ui_enabled كان يُخزَّن ولا يُقرأ — الآن يعمل فعليًا
+        $settings = get_option('wzsi_settings', array());
+        if (isset($settings['premium_ui_enabled']) && empty($settings['premium_ui_enabled'])) {
+            return; // واجهة Premium معطلة من الإعدادات
+        }
+
         add_action('admin_notices', array($this, 'inject_navigation'), 1);
         add_action('admin_notices', array($this, 'inject_breadcrumbs'), 2);
         add_action('admin_footer', array($this, 'inject_theme_toggle_button'));

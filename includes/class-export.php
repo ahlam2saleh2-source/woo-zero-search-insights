@@ -68,19 +68,19 @@ class WZSI_Export
         $out = fopen('php://output', 'w');
         fputs($out, "\xEF\xBB\xBF");
 
-        // الترويسة
+        // الترويسة — عبر نظام i18n المخصص (الإصلاح: كانت عربية مثبتة تظهر للمواقع الإنجليزية)
         fputcsv($out, array(
-            __('مصطلح البحث', 'woo-zero-search-insights'),
-            __('عدد النتائج', 'woo-zero-search-insights'),
-            __('تاريخ البحث', 'woo-zero-search-insights'),
-            __('آخر مرة', 'woo-zero-search-insights'),
-            __('عدد التكرار', 'woo-zero-search-insights'),
-            __('معرف المستخدم', 'woo-zero-search-insights'),
-            __('IP', 'woo-zero-search-insights'),
-            __('اللغة', 'woo-zero-search-insights'),
-            __('نوع الطلب', 'woo-zero-search-insights'),
-            __('المرجع', 'woo-zero-search-insights'),
-        ));
+            wzsi_t('csv_term'),
+            wzsi_t('csv_results'),
+            wzsi_t('csv_date'),
+            wzsi_t('csv_last'),
+            wzsi_t('csv_repeat'),
+            wzsi_t('csv_user'),
+            wzsi_t('csv_ip'),
+            wzsi_t('csv_lang'),
+            wzsi_t('csv_type'),
+            wzsi_t('csv_referer'),
+        ), ',', '"', '\\');
 
         foreach ($rows as $row) {
             fputcsv($out, array(
@@ -94,7 +94,7 @@ class WZSI_Export
                 $row->language,
                 $row->is_ajax ? 'AJAX' : 'Page',
                 $row->referer,
-            ));
+            ), ',', '"', '\\');
         }
 
         fclose($out);
@@ -108,7 +108,7 @@ class WZSI_Export
     {
         check_ajax_referer(WZSI_NONCE_ACTION, 'nonce');
         if (!current_user_can(WZSI_CAP)) {
-            wp_send_json_error(__('لا صلاحية.', 'woo-zero-search-insights'), 403);
+            wp_send_json_error(wzsi_t('ajax_no_permission'), 403);
         }
         $days = (int) ($_POST['days'] ?? 0);
         $zero_only = (int) ($_POST['zero_only'] ?? 1);
@@ -122,12 +122,12 @@ class WZSI_Export
     {
         check_ajax_referer(WZSI_NONCE_ACTION, 'nonce');
         if (!current_user_can(WZSI_CAP)) {
-            wp_send_json_error(__('لا صلاحية.', 'woo-zero-search-insights'), 403);
+            wp_send_json_error(wzsi_t('ajax_no_permission'), 403);
         }
         $deleted = WZSI_Database::truncate_logs();
         wp_send_json_success(array(
             'deleted' => $deleted,
-            'message' => __('تم مسح كل السجلات.', 'woo-zero-search-insights'),
+            'message' => wzsi_t('ajax_logs_cleared'),
         ));
     }
 
@@ -138,18 +138,17 @@ class WZSI_Export
     {
         check_ajax_referer(WZSI_NONCE_ACTION, 'nonce');
         if (!current_user_can(WZSI_CAP)) {
-            wp_send_json_error(__('لا صلاحية.', 'woo-zero-search-insights'), 403);
+            wp_send_json_error(wzsi_t('ajax_no_permission'), 403);
         }
         $term = isset($_POST['term']) ? sanitize_text_field(wp_unslash($_POST['term'])) : '';
         if (!$term) {
-            wp_send_json_error(__('مصطلح غير صالح.', 'woo-zero-search-insights'));
+            wp_send_json_error(wzsi_t('ajax_invalid_term'));
         }
         $deleted = WZSI_Database::delete_by_term($term);
         wp_send_json_success(array(
             'deleted' => $deleted,
             'message' => sprintf(
-                /* translators: %d: deleted rows count */
-                __('تم حذف %d سجل.', 'woo-zero-search-insights'),
+                wzsi_t('ajax_term_deleted'),
                 $deleted
             ),
         ));

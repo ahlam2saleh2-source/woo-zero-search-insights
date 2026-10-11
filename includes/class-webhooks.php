@@ -32,14 +32,27 @@ class WZSI_Webhooks
     {
         $settings = get_option('wzsi_settings', array());
 
+        if (empty($data['search_term'])) {
+            return;
+        }
+
         $term = $data['search_term'];
         $normalized = WZSI_Database::normalize_term($term);
 
+        // منع التكرار داخل نفس الطلب
         $cache_key = md5($normalized);
         if (isset($this->recently_notified[$cache_key])) {
             return;
         }
         $this->recently_notified[$cache_key] = true;
+
+        // الإصلاح: منع سبام Slack/Discord — كان كل بحث جديد لنفس المصطلح
+        // يرسل إشعارًا من جديد. الآن إشعار واحد لكل مصطلح كل ساعة.
+        $throttle_key = 'wzsi_wh_' . md5($normalized);
+        if (get_transient($throttle_key)) {
+            return;
+        }
+        set_transient($throttle_key, 1, HOUR_IN_SECONDS);
 
         if (!empty($settings['slack_enabled']) && !empty($settings['slack_webhook_url'])) {
             $this->send_slack($data, $settings['slack_webhook_url']);
@@ -56,7 +69,7 @@ class WZSI_Webhooks
         $admin_url = admin_url('admin.php?page=wzsi-dashboard');
 
         $payload = array(
-            'text' => sprintf('🔍 %s: %s', $site_name, wzsi_t('email_subject_new')),
+            'text' => sprintf('🔍 %s: %s', $site_name, wzsi_t('webhook_title')),
             'attachments' => array(
                 array(
                     'color'   => '#FF7A45',
@@ -90,27 +103,28 @@ class WZSI_Webhooks
     {
         $site_name = get_bloginfo('name');
         $admin_url = admin_url('admin.php?page=wzsi-dashboard');
+        $occurred  = !empty($data['occurred_at']) ? $data['occurred_at'] : current_time('mysql');
 
         $embed = array(
-            'title'       => sprintf('🔍 %s: %s', $site_name, wzsi_t('email_subject_new')),
-            'description' => sprintf('%s "**%s**" %s',
-                wzsi_t('email_searched_for'),
+            'title'       => sprintf('🔍 %s: %s', $site_name, wzsi_t('webhook_title')),
+            'description' => sprintf('%s **"%s"** %s',
+                wzsi_t('webhook_searched_for'),
                 $data['search_term'],
-                wzsi_t('email_no_results')
+                wzsi_t('webhook_no_results')
             ),
             'url'         => $admin_url,
             'color'       => hexdec('FF7A45'),
             'fields'      => array(
                 array(
                     'name'   => wzsi_t('col_date'),
-                    'value'  => $data['occurred_at'],
+                    'value'  => $occurred,
                     'inline' => true,
                 ),
             ),
             'footer'      => array(
                 'text' => 'Woo Zero Search Insights',
             ),
-            'timestamp' => gmdate('c', strtotime($data['occurred_at'])),
+            'timestamp' => gmdate('c', strtotime($occurred)),
         );
 
         $payload = array('embeds' => array($embed));

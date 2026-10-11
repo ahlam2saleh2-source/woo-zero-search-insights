@@ -180,7 +180,8 @@ if (!current_user_can(WZSI_CAP)) {
 <script>
 jQuery(function($) {
     var trend = <?php echo wp_json_encode($trend); ?>;
-    if (trend && trend.length) {
+    // حارس: لا تنهار الصفحة إن تعذر تحميل Chart.js
+    if (trend && trend.length && typeof Chart !== 'undefined') {
         var labels = trend.map(function(r) { return r.day; });
         var totals = trend.map(function(r) { return parseInt(r.total) || 0; });
         var zeros  = trend.map(function(r) { return parseInt(r.zero_count) || 0; });
@@ -223,33 +224,7 @@ jQuery(function($) {
         }
     }
 
-    $('.wzsm-delete-term').on('click', function(e) {
-        e.preventDefault();
-        if (!confirm(wzsm.i18n.confirm_delete_term)) return;
-        var $btn = $(this);
-        var term = $btn.data('term');
-        $.post(wzsm.ajax_url, {
-            action: 'wzsi_delete_term',
-            nonce: wzsm.nonce,
-            term: term
-        }, function(resp) {
-            if (resp && resp.success) {
-                $btn.closest('tr').fadeOut(300, function(){ $(this).remove(); });
-            }
-        });
-    });
-
-    $('#wzsm-clear-all').on('click', function(e) {
-        e.preventDefault();
-        if (!confirm(wzsm.i18n.confirm_delete)) return;
-        $.post(wzsm.ajax_url, {
-            action: 'wzsi_clear_all',
-            nonce: wzsm.nonce
-        }, function(resp) {
-            if (resp && resp.success) {
-                location.reload();
-            }
-        });
-    });
+    // ملاحظة: معالجات حذف المصطلح و"مسح الكل" تُدار في assets/js/admin.js فقط
+    // (الإصلاح: كان مكرّرة هنا وفي admin.js معًا — يسبب طلبات AJAX مزدوجة وتأكيدات متكررة)
 });
 </script>

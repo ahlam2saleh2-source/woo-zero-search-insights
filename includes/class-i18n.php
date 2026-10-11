@@ -66,8 +66,8 @@ class WZSI_i18n
             'stat_zero_results' => array('ar' => 'عمليات بلا نتائج', 'en' => 'Zero-Result Searches'),
             'stat_failure_rate' => array('ar' => 'معدل الفشل', 'en' => 'Failure Rate'),
             'stat_opportunities' => array('ar' => 'فرص تحسين', 'en' => 'Improvement Opportunities'),
-            'stat_sub_total' => array('ar' => 'مصطلح فريد', 'en' => 'unique terms'),
-            'stat_sub_zero' => array('ar' => 'مصطلح فريد بلا نتائج', 'en' => 'unique zero terms'),
+            'stat_sub_total' => array('ar' => '%s مصطلح فريد', 'en' => '%s unique terms'),
+            'stat_sub_zero' => array('ar' => '%s مصطلح فريد بلا نتائج', 'en' => '%s unique zero terms'),
             'stat_sub_rate' => array('ar' => 'نسبة عمليات البحث التي لم تجد نتائج', 'en' => 'percentage of searches with no results'),
             'stat_sub_opp' => array('ar' => 'مصطلحات يمكنك إضافة منتجات لها', 'en' => 'terms you can add products for'),
 
@@ -117,6 +117,8 @@ class WZSI_i18n
             'field_dark_mode' => array('ar' => 'الوضع الداكن', 'en' => 'Dark Mode'),
             'field_widget' => array('ar' => 'إظهار Widget', 'en' => 'Show Widget'),
             'field_white_label' => array('ar' => 'إزالة العلامة التجارية', 'en' => 'Remove branding'),
+            'field_premium_ui' => array('ar' => 'واجهة Premium (Tabs وBreadcrumbs)', 'en' => 'Premium UI (Tabs & Breadcrumbs)'),
+            'field_capture_debug' => array('ar' => 'سجل الالتقاط التشخيصي (للمطوّرين)', 'en' => 'Capture debug trail (developers)'),
 
             // === المواضيع ===
             'theme_light' => array('ar' => 'فاتح', 'en' => 'Light'),
@@ -175,6 +177,14 @@ class WZSI_i18n
                 'ar' => 'إخفاء اسم az-soft4media من كل الواجهات.',
                 'en' => 'Hide az-soft4media brand from all interfaces.'
             ),
+            'desc_premium_ui' => array(
+                'ar' => 'شريط التبويبات العلوي وBreadcrumbs في صفحات الإضافة.',
+                'en' => 'Top tabs bar and breadcrumbs across plugin pages.'
+            ),
+            'desc_capture_debug' => array(
+                'ar' => 'يُظهر محاولات الالتقاط في صفحة فحص الصحة — فعّله فقط للاستكشاف، ثم عطّله.',
+                'en' => 'Shows capture attempts on the Health Check page — enable only for debugging, then disable.'
+            ),
 
             // === وصف الجداول ===
             'log_table_subtitle' => array(
@@ -210,6 +220,68 @@ class WZSI_i18n
             'notice_no_permission' => array('ar' => 'ليس لديك صلاحية.', 'en' => 'You do not have permission.'),
             'notice_invalid_nonce' => array('ar' => 'رمز الأمان غير صالح.', 'en' => 'Invalid security token.'),
             'notice_logs_cleared' => array('ar' => 'تم حذف جميع السجلات.', 'en' => 'All logs have been deleted.'),
+
+            // === رسائل AJAX والتصدير ===
+            'ajax_no_permission' => array('ar' => 'لا صلاحية.', 'en' => 'No permission.'),
+            'ajax_logs_cleared' => array('ar' => 'تم مسح كل السجلات.', 'en' => 'All logs cleared.'),
+            'ajax_invalid_term' => array('ar' => 'مصطلح غير صالح.', 'en' => 'Invalid term.'),
+            'ajax_term_deleted' => array('ar' => 'تم حذف %d سجل.', 'en' => '%d log(s) deleted.'),
+
+            // === أعمدة تصدير CSV ===
+            'csv_term' => array('ar' => 'مصطلح البحث', 'en' => 'Search Term'),
+            'csv_results' => array('ar' => 'عدد النتائج', 'en' => 'Results Count'),
+            'csv_date' => array('ar' => 'تاريخ البحث', 'en' => 'Search Date'),
+            'csv_last' => array('ar' => 'آخر ظهور', 'en' => 'Last Seen'),
+            'csv_repeat' => array('ar' => 'عدد التكرار', 'en' => 'Repeat Count'),
+            'csv_user' => array('ar' => 'معرف المستخدم', 'en' => 'User ID'),
+            'csv_ip' => array('ar' => 'عنوان IP', 'en' => 'IP Address'),
+            'csv_lang' => array('ar' => 'اللغة', 'en' => 'Language'),
+            'csv_type' => array('ar' => 'نوع الطلب', 'en' => 'Request Type'),
+            'csv_referer' => array('ar' => 'المرجع', 'en' => 'Referrer'),
+
+            // === إشعارات Slack/Discord ===
+            'webhook_title' => array('ar' => 'بحث بدون نتائج', 'en' => 'Zero-result search'),
+            'webhook_searched_for' => array('ar' => 'تم البحث عن', 'en' => 'Customer searched for'),
+            'webhook_no_results' => array('ar' => 'ولم تُرجع أي نتائج', 'en' => 'with no results found'),
+
+            // === صفحة فحص الصحة ===
+            'hc_version' => array('ar' => 'الإصدار', 'en' => 'Version'),
+            'hc_classes' => array('ar' => 'الكلاسات', 'en' => 'Classes'),
+            'hc_class' => array('ar' => 'الكلاس', 'en' => 'Class'),
+            'hc_status' => array('ar' => 'الحالة', 'en' => 'Status'),
+            'hc_settings' => array('ar' => 'الإعدادات', 'en' => 'Settings'),
+            'hc_theme' => array('ar' => 'الموضوع', 'en' => 'Theme'),
+            'hc_ui_lang' => array('ar' => 'لغة الواجهة', 'en' => 'UI Language'),
+            'hc_tracking' => array('ar' => 'التتبع مفعّل', 'en' => 'Tracking Enabled'),
+            'hc_slack' => array('ar' => 'Slack مفعّل', 'en' => 'Slack Enabled'),
+            'hc_discord' => array('ar' => 'Discord مفعّل', 'en' => 'Discord Enabled'),
+            'hc_widget' => array('ar' => 'Widget مفعّل', 'en' => 'Widget Enabled'),
+            'hc_database' => array('ar' => 'قاعدة البيانات', 'en' => 'Database'),
+            'hc_table_name' => array('ar' => 'اسم الجدول', 'en' => 'Table Name'),
+            'hc_table_exists' => array('ar' => 'الجدول موجود', 'en' => 'Table Exists'),
+            'hc_row_count' => array('ar' => 'عدد السجلات', 'en' => 'Row Count'),
+            'hc_test_search' => array('ar' => '🔍 اختبار: ابحث عن مصطلح غير موجود', 'en' => '🔍 Test: Search for a non-existent term'),
+            'hc_debug_title' => array('ar' => '🔎 سجل الالتقاط التشخيصي', 'en' => '🔎 Capture Debug Trail'),
+            'hc_debug_disabled' => array(
+                'ar' => 'سجل التشخيص معطّل افتراضيًا حفاظًا على الأداء. فعّله من الإعدادات (سجل الالتقاط التشخيصي) ثم قم ببحث تجريبي.',
+                'en' => 'Debug trail is disabled by default for performance. Enable it in Settings (Capture debug trail), then run a test search.'
+            ),
+            'hc_debug_empty' => array(
+                'ar' => 'لا توجد محاولات التقاط مسجلة بعد — قم بعملية بحث من واجهة المتجر ثم أعد تحميل هذه الصفحة.',
+                'en' => 'No capture attempts yet — run a search from the storefront and reload this page.'
+            ),
+            'hc_debug_note' => array(
+                'ar' => 'سجل تشخيصي مؤقت (آخر 25 محاولة فقط). إن بحثت من المتجر ولم يظهر أي سطر فالطلب لم يصل إلى PHP (كاش خادم) أو استخدم مسارًا غير معروف.',
+                'en' => 'Temporary debug trail (last 25 attempts). If you searched but see no rows, the request never reached PHP (server cache) or used an unknown path.'
+            ),
+            'hc_col_time' => array('ar' => 'الوقت', 'en' => 'Time'),
+            'hc_col_source' => array('ar' => 'المصدر', 'en' => 'Source'),
+            'hc_col_term' => array('ar' => 'المصطلح', 'en' => 'Term'),
+            'hc_col_results' => array('ar' => 'النتائج', 'en' => 'Results'),
+            'hc_col_decision' => array('ar' => 'القرار', 'en' => 'Decision'),
+            'hc_col_details' => array('ar' => 'التفاصيل', 'en' => 'Details'),
+            'hc_logged' => array('ar' => '✅ سُجّل', 'en' => '✅ Logged'),
+            'hc_skipped' => array('ar' => '⏭️ تخطّي', 'en' => '⏭️ Skipped'),
 
             // === ربط الإضافة ===
             'link_settings' => array('ar' => 'الإعدادات', 'en' => 'Settings'),

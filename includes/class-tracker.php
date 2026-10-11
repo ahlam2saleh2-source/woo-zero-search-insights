@@ -157,12 +157,13 @@ class WZSI_Tracker
             return false;
         }
 
-        // قائمة المصطلحات المستثناة
+        // قائمة المصطلحات المستثناة (فحص متوافق مع العربية/multibyte)
         if (!empty($settings['excluded_terms'])) {
             $excluded = array_filter(array_map('trim', explode("\n", $settings['excluded_terms'])));
             $term_lower = function_exists('mb_strtolower') ? mb_strtolower($term, 'UTF-8') : strtolower($term);
             foreach ($excluded as $ex) {
-                if ($ex && stripos($term_lower, $ex) !== false) {
+                $ex_lower = function_exists('mb_strtolower') ? mb_strtolower($ex, 'UTF-8') : strtolower($ex);
+                if ($ex_lower && (function_exists('mb_stripos') ? mb_stripos($term, $ex_lower) !== false : stripos($term_lower, $ex_lower) !== false)) {
                     return false;
                 }
             }
@@ -186,6 +187,13 @@ class WZSI_Tracker
      */
     private function debug_note($source, $term, $found, $decision, $reason = '')
     {
+        // الإصلاح: سجل التشخيص مُعطّل افتراضيًا (كان يكتب في DB مع autoload عند كل بحث)
+        // يُفعّل من الإعدادات عند الحاجة لاستكشاف الأخطاء فقط.
+        $settings = $this->get_settings();
+        if (empty($settings['capture_debug'])) {
+            return;
+        }
+
         $entries = get_option('wzsi_capture_debug', array());
         if (!is_array($entries)) {
             $entries = array();
@@ -204,7 +212,8 @@ class WZSI_Tracker
         if (count($entries) > 25) {
             $entries = array_slice($entries, 0, 25);
         }
-        update_option('wzsi_capture_debug', $entries);
+        // autoload=false لتجنب تحميل السجل في كل طلب
+        update_option('wzsi_capture_debug', $entries, false);
     }
 
     /**
@@ -232,6 +241,16 @@ class WZSI_Tracker
         ));
 
         self::$logged_this_request = true;
+
+        // الإصلاح: إطلاق خطاف الإشعارات — كان مسجلاً في WZSI_Webhooks
+        // لكن لا أحد يطلقه، فإشعارات Slack/Discord كانت ميتة تماماً.
+        if (max(0, (int) $results_count) === 0) {
+            do_action('wzsi_after_log_zero_search', array(
+                'search_term' => sanitize_text_field($term),
+                'occurred_at' => current_time('mysql'),
+            ));
+        }
+
         return true;
     }
 
@@ -294,6 +313,15 @@ class WZSI_Tracker
 
         if ($id) {
             self::$logged_this_request = true;
+
+            // إشعار فوري أيضًا لمسار AJAX/REST عند الصفرية (كان مفقوداً)
+            if (max(0, (int) $found) === 0) {
+                do_action('wzsi_after_log_zero_search', array(
+                    'search_term' => sanitize_text_field($term),
+                    'occurred_at' => current_time('mysql'),
+                ));
+            }
+
             return true;
         }
         return false;

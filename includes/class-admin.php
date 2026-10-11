@@ -53,7 +53,8 @@ class WZSI_Admin
         }
         wp_enqueue_style('wzsm-admin', WZSI_PLUGIN_URL . 'assets/css/admin.css', array(), WZSI_VERSION);
         wp_enqueue_script('wzsm-admin', WZSI_PLUGIN_URL . 'assets/js/admin.js', array('jquery'), WZSI_VERSION, true);
-        wp_enqueue_script('chartjs', 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js', array(), '4.4.0', true);
+        // الإصلاح: تم تضمين Chart.js محليًا بدل CDN — متطلب منصات البيع + يعمل بدون إنترنت
+        wp_enqueue_script('chartjs', WZSI_PLUGIN_URL . 'assets/vendor/chart.umd.min.js', array(), '4.4.0', true);
 
         wp_localize_script('wzsm-admin', 'wzsm', array(
             'ajax_url' => admin_url('admin-ajax.php'),
@@ -120,7 +121,7 @@ class WZSI_Admin
 
         $total = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$table} {$where}");
         $logs = $wpdb->get_results("SELECT * FROM {$table} {$where} ORDER BY searched_at DESC LIMIT {$offset}, {$per_page}");
-        $pages = ceil($total / $per_page);
+        $pages = (int) ceil($total / $per_page);
 
         require WZSI_PLUGIN_DIR . 'includes/views/logs.php';
     }

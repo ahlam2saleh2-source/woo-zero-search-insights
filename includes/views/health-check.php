@@ -28,15 +28,17 @@ global $wpdb;
 $table = $wpdb->prefix . WZSI_DB_TABLE;
 $table_exists = !empty($wpdb->get_results("SHOW TABLES LIKE '{$table}'", ARRAY_N));
 $row_count = $table_exists ? (int) $wpdb->get_var("SELECT COUNT(*) FROM {$table}") : 0;
+
+$debug_enabled = !empty($settings['capture_debug']);
 ?>
 <div class="wrap wzsm-wrap">
     <h1>🩺 <?php echo esc_html(wzsi_t('menu_health_check')); ?></h1>
-    <p class="wzsm-subtitle"><?php echo esc_html(sprintf('%s: %s', 'Version', WZSI_VERSION)); ?></p>
+    <p class="wzsm-subtitle"><?php echo esc_html(sprintf('%s: %s', wzsi_t('hc_version'), WZSI_VERSION)); ?></p>
 
     <div class="wzsm-stat-card" style="background:#fff; padding:20px; border:1px solid #ddd; border-radius:8px; margin-bottom:20px;">
-        <h2>🏗️ Classes</h2>
+        <h2>🏗️ <?php echo esc_html(wzsi_t('hc_classes')); ?></h2>
         <table class="widefat striped">
-            <thead><tr><th>Class</th><th>Status</th></tr></thead>
+            <thead><tr><th><?php echo esc_html(wzsi_t('hc_class')); ?></th><th><?php echo esc_html(wzsi_t('hc_status')); ?></th></tr></thead>
             <tbody>
             <?php foreach ($classes_status as $cls => $loaded) : ?>
                 <tr><td><code><?php echo esc_html($cls); ?></code></td>
@@ -47,25 +49,25 @@ $row_count = $table_exists ? (int) $wpdb->get_var("SELECT COUNT(*) FROM {$table}
     </div>
 
     <div class="wzsm-stat-card" style="background:#fff; padding:20px; border:1px solid #ddd; border-radius:8px; margin-bottom:20px;">
-        <h2>⚙️ Settings</h2>
+        <h2>⚙️ <?php echo esc_html(wzsi_t('hc_settings')); ?></h2>
         <table class="form-table">
-            <tr><th>Theme</th><td><code><?php echo esc_html($settings['theme'] ?? 'light'); ?></code></td></tr>
-            <tr><th>UI Language</th><td><code><?php echo esc_html($settings['ui_lang'] ?? (function_exists('wzsi_default_ui_lang') ? wzsi_default_ui_lang() : 'ar')); ?></code></td></tr>
-            <tr><th>Tracking Enabled</th><td><code><?php echo !empty($settings['enabled']) ? '1' : '0'; ?></code></td></tr>
-            <tr><th>Slack Enabled</th><td><code><?php echo !empty($settings['slack_enabled']) ? '1' : '0'; ?></code></td></tr>
-            <tr><th>Discord Enabled</th><td><code><?php echo !empty($settings['discord_enabled']) ? '1' : '0'; ?></code></td></tr>
-            <tr><th>Widget Enabled</th><td><code><?php echo !empty($settings['dashboard_widget_enabled']) ? '1' : '0'; ?></code></td></tr>
+            <tr><th><?php echo esc_html(wzsi_t('hc_theme')); ?></th><td><code><?php echo esc_html($settings['theme'] ?? 'light'); ?></code></td></tr>
+            <tr><th><?php echo esc_html(wzsi_t('hc_ui_lang')); ?></th><td><code><?php echo esc_html($settings['ui_lang'] ?? (function_exists('wzsi_default_ui_lang') ? wzsi_default_ui_lang() : 'ar')); ?></code></td></tr>
+            <tr><th><?php echo esc_html(wzsi_t('hc_tracking')); ?></th><td><code><?php echo !empty($settings['enabled']) ? '1' : '0'; ?></code></td></tr>
+            <tr><th><?php echo esc_html(wzsi_t('hc_slack')); ?></th><td><code><?php echo !empty($settings['slack_enabled']) ? '1' : '0'; ?></code></td></tr>
+            <tr><th><?php echo esc_html(wzsi_t('hc_discord')); ?></th><td><code><?php echo !empty($settings['discord_enabled']) ? '1' : '0'; ?></code></td></tr>
+            <tr><th><?php echo esc_html(wzsi_t('hc_widget')); ?></th><td><code><?php echo !empty($settings['dashboard_widget_enabled']) ? '1' : '0'; ?></code></td></tr>
         </table>
     </div>
 
     <div class="wzsm-stat-card" style="background:#fff; padding:20px; border:1px solid #ddd; border-radius:8px; margin-bottom:20px;">
-        <h2>🗄️ Database</h2>
+        <h2>🗄️ <?php echo esc_html(wzsi_t('hc_database')); ?></h2>
         <table class="form-table">
-            <tr><th>Table Name</th><td><code><?php echo esc_html($table); ?></code></td></tr>
-            <tr><th>Table Exists</th><td><?php echo $table_exists ? '✅' : '❌'; ?></td></tr>
-            <tr><th>Row Count</th><td><code><?php echo esc_html(number_format_i18n($row_count)); ?></code></td></tr>
+            <tr><th><?php echo esc_html(wzsi_t('hc_table_name')); ?></th><td><code><?php echo esc_html($table); ?></code></td></tr>
+            <tr><th><?php echo esc_html(wzsi_t('hc_table_exists')); ?></th><td><?php echo $table_exists ? '✅' : '❌'; ?></td></tr>
+            <tr><th><?php echo esc_html(wzsi_t('hc_row_count')); ?></th><td><code><?php echo esc_html(number_format_i18n($row_count)); ?></code></td></tr>
         </table>
-        <p><a href="<?php echo esc_url(home_url('/?s=healthcheck_' . wp_rand(1000, 9999) . '&post_type=product')); ?>" target="_blank" class="button button-primary">🔍 Test: Search for non-existent term</a></p>
+        <p><a href="<?php echo esc_url(home_url('/?s=healthcheck_' . wp_rand(1000, 9999) . '&post_type=product')); ?>" target="_blank" class="button button-primary"><?php echo esc_html(wzsi_t('hc_test_search')); ?></a></p>
     </div>
 
     <?php
@@ -75,19 +77,23 @@ $row_count = $table_exists ? (int) $wpdb->get_var("SELECT COUNT(*) FROM {$table}
     }
     ?>
     <div class="wzsm-stat-card" style="background:#fff; padding:20px; border:1px solid #ddd; border-radius:8px; margin-bottom:20px;">
-        <h2>🔎 Capture Debug / سجل الالتقاط التشخيصي</h2>
-        <?php if (empty($debug_entries)) : ?>
-            <p>لا توجد محاولات التقاط مسجلة بعد — قم بعملية بحث من واجهة المتجر ثم أعد تحميل هذه الصفحة.</p>
+        <h2><?php echo esc_html(wzsi_t('hc_debug_title')); ?></h2>
+        <?php if (!$debug_enabled) : ?>
+            <p style="color:#8a6d3b; background:#fff8e5; border:1px solid #f0d38e; padding:10px; border-radius:6px;">
+                ℹ️ <?php echo esc_html(wzsi_t('hc_debug_disabled')); ?>
+            </p>
+        <?php elseif (empty($debug_entries)) : ?>
+            <p><?php echo esc_html(wzsi_t('hc_debug_empty')); ?></p>
         <?php else : ?>
             <table class="widefat striped">
                 <thead>
                     <tr>
-                        <th>الوقت</th>
-                        <th>المصدر</th>
-                        <th>المصطلح</th>
-                        <th>النتائج</th>
-                        <th>القرار</th>
-                        <th>التفاصيل</th>
+                        <th><?php echo esc_html(wzsi_t('hc_col_time')); ?></th>
+                        <th><?php echo esc_html(wzsi_t('hc_col_source')); ?></th>
+                        <th><?php echo esc_html(wzsi_t('hc_col_term')); ?></th>
+                        <th><?php echo esc_html(wzsi_t('hc_col_results')); ?></th>
+                        <th><?php echo esc_html(wzsi_t('hc_col_decision')); ?></th>
+                        <th><?php echo esc_html(wzsi_t('hc_col_details')); ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -97,15 +103,14 @@ $row_count = $table_exists ? (int) $wpdb->get_var("SELECT COUNT(*) FROM {$table}
                         <td><code><?php echo esc_html($entry['src']); ?></code></td>
                         <td><?php echo esc_html($entry['term']); ?></td>
                         <td><?php echo esc_html((string) $entry['found']); ?></td>
-                        <td><?php echo ('logged' === $entry['do']) ? '✅ سُجّل' : '⏭️ تخطّي'; ?></td>
+                        <td><?php echo ('logged' === $entry['do']) ? esc_html(wzsi_t('hc_logged')) : esc_html(wzsi_t('hc_skipped')); ?></td>
                         <td><?php echo esc_html($entry['why']); ?><?php echo !empty($entry['uri']) ? '<br><code style="font-size:10px;">' . esc_html($entry['uri']) . '</code>' : ''; ?></td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>
             </table>
             <p style="color:#666; font-size:11px;">
-                سجل تشخيصي مؤقت (آخر 25 محاولة فقط) — يُحذف في نسخة الإطلاق النهائية.
-                إن بحثت من المتجر ولم يظهر أي سطر هنا فالطلب لم يصل إلى PHP (كاش خادم) أو استخدم مسارًا غير معروف.
+                <?php echo esc_html(wzsi_t('hc_debug_note')); ?>
             </p>
         <?php endif; ?>
     </div>

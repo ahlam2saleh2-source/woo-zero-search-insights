@@ -3,7 +3,7 @@
  * Plugin Name:       Woo Zero Search Insights
  * Plugin URI:        https://github.com/ahlam2saleh2-source/woo-zero-search-insights
  * Description:       Track WooCommerce searches that return no results. Analytics dashboard, CSV export, Slack/Discord alerts, 6 admin themes, AR/EN, white-label.
- * Version:           1.0.0
+ * Version:           1.0.1
  * Author:            az-soft4media
  * Author URI:        https://troyawin.tech
  * Text Domain:       woo-zero-search-insights
@@ -13,7 +13,7 @@
  * Requires at least: 5.6
  * Requires PHP:      7.4
  * WC requires at least: 5.0
- * WC tested up to:   9.0
+ * WC tested up to:   10.1
  */
 
 if (!defined('ABSPATH')) {
@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
 }
 
 // ════════════ التعريفات ════════════
-define('WZSI_VERSION',           '1.0.0');
+define('WZSI_VERSION',           '1.0.1');
 define('WZSI_PLUGIN_FILE',        __FILE__);
 define('WZSI_PLUGIN_DIR',         plugin_dir_path(__FILE__));
 define('WZSI_PLUGIN_URL',         plugin_dir_url(__FILE__));
@@ -62,6 +62,12 @@ spl_autoload_register(function ($class) {
 
 // ════════════ التهيئة ════════════
 function wzsi_init() {
+    // نظام الترجمة المخصص (يُحمّل أولاً دائمًا — حتى بدون WooCommerce)
+    // الإصلاح: كان استدعاء wzsi_t() في رسالة انعدام WooCommerce يسبب Fatal Error
+    // لأن تعريف الدالة لا يُحمّل إلا مع كلاس الترجمة.
+    require_once WZSI_PLUGIN_DIR . 'includes/class-i18n.php';
+    WZSI_i18n::instance();
+
     if (!class_exists('WooCommerce')) {
         add_action('admin_notices', function () {
             echo '<div class="notice notice-error"><p>' . esc_html(wzsi_t('notice_woocommerce_required')) . '</p></div>';
@@ -70,9 +76,6 @@ function wzsi_init() {
     }
 
     load_plugin_textdomain('woo-zero-search-insights', false, dirname(WZSI_PLUGIN_BASENAME) . '/languages');
-
-    // نظام الترجمة المخصص (يُحمّل أولاً)
-    WZSI_i18n::instance();
 
     // الكلاسات الأساسية
     WZSI_Core::instance();

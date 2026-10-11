@@ -58,8 +58,19 @@ class WZSI_Database
 
         dbDelta($sql);
 
-        // فهرس إضافي للاستعلامات السريعة
-        $wpdb->query("CREATE INDEX IF NOT EXISTS idx_term_at ON {$table_name} (search_term_normalized, searched_at)");
+        // الإصلاح: كان "CREATE INDEX IF NOT EXISTS" صيغة MariaDB فقط وتسبب خطأ DB صامت على MySQL.
+        // الآن نفحص وجود الفهرس أولاً بطريقة متوافقة مع MySQL وMariaDB معًا.
+        $indexes = $wpdb->get_results("SHOW INDEX FROM {$table_name}");
+        $idx_exists = false;
+        foreach ((array) $indexes as $idx) {
+            if (isset($idx->Key_name) && 'idx_term_at' === $idx->Key_name) {
+                $idx_exists = true;
+                break;
+            }
+        }
+        if (!$idx_exists) {
+            $wpdb->query("CREATE INDEX idx_term_at ON {$table_name} (search_term_normalized, searched_at)");
+        }
     }
 
     /**
@@ -88,12 +99,15 @@ class WZSI_Database
         ));
 
         if ($existing) {
-            // تحديث عدد التكرارات
+            // تحديث عدد التكرارات + تحديث results_count لآخر نتيجة فعلية
+            // الإصلاح: كان البحث المتكرر بعد إضافة منتج يبقى محسوبًا "بلا نتائج" خطأً
             $wpdb->query($wpdb->prepare(
                 "UPDATE {$table_name}
                  SET occurrence_count = occurrence_count + 1,
-                     last_occurrence = NOW()
+                     last_occurrence = NOW(),
+                     results_count = %d
                  WHERE id = %d",
+                max(0, (int) $data['results_count']),
                 $existing
             ));
             return (int) $existing;

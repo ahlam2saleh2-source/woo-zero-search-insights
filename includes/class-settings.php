@@ -47,6 +47,7 @@ class WZSI_Settings
             'premium_ui_enabled'   => 1,
             'dark_mode'            => 0,
             'white_label'          => 0,
+            'capture_debug'        => 0,
             'theme'                => 'light',
             'ui_lang'              => function_exists('wzsi_default_ui_lang') ? wzsi_default_ui_lang() : 'ar',
         );
@@ -119,6 +120,10 @@ class WZSI_Settings
         add_settings_field('wzsi_dark_mode', wzsi_t('field_dark_mode'), array($this, 'render_checkbox_field'), 'wzsi_settings_page', 'wzsi_ui_section', array('key' => 'dark_mode'));
         add_settings_field('wzsi_widget', wzsi_t('field_widget'), array($this, 'render_checkbox_field'), 'wzsi_settings_page', 'wzsi_ui_section', array('key' => 'dashboard_widget_enabled'));
         add_settings_field('wzsi_white_label', wzsi_t('field_white_label'), array($this, 'render_checkbox_field'), 'wzsi_settings_page', 'wzsi_ui_section', array('key' => 'white_label'));
+        // الإصلاح: كان إعداد premium_ui_enabled يُخزَّن ولا يُعرض — الآن قابل للتحكم
+        add_settings_field('wzsi_premium_ui', wzsi_t('field_premium_ui'), array($this, 'render_checkbox_field'), 'wzsi_settings_page', 'wzsi_ui_section', array('key' => 'premium_ui_enabled'));
+        // الإصلاح: سجل التشخيص أصبح opt-in من الإعدادات (كان مكتوبًا في DB عند كل بحث)
+        add_settings_field('wzsi_capture_debug', wzsi_t('field_capture_debug'), array($this, 'render_checkbox_field'), 'wzsi_settings_page', 'wzsi_ui_section', array('key' => 'capture_debug'));
     }
 
     public function handle_actions()
@@ -163,6 +168,7 @@ class WZSI_Settings
         $sanitized['premium_ui_enabled']   = !empty($input['premium_ui_enabled']) ? 1 : 0;
         $sanitized['dark_mode']            = !empty($input['dark_mode']) ? 1 : 0;
         $sanitized['white_label']          = !empty($input['white_label']) ? 1 : 0;
+        $sanitized['capture_debug']        = !empty($input['capture_debug']) ? 1 : 0;
         $allowed_themes = array('light', 'dark', 'ocean', 'forest', 'sunset', 'midnight');
         $sanitized['theme']                = in_array($input['theme'] ?? 'light', $allowed_themes, true) ? $input['theme'] : 'light';
         $default_lang = function_exists('wzsi_default_ui_lang') ? wzsi_default_ui_lang() : 'ar';
