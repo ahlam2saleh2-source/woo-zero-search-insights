@@ -67,6 +67,7 @@ class WZSI_Tracker
             'track_anonymous'     => 1,
             'ip_anonymize'        => 1,
             'auto_cleanup'        => 1,
+            'exclude_bots'        => 1,
         );
         $saved = get_option('wzsi_settings', array());
         return wp_parse_args($saved, $defaults);
@@ -136,6 +137,37 @@ class WZSI_Tracker
     }
 
     /**
+     * F-1: هل هذا الطلب من روبوت زحف/مراقبة؟
+     * قائمة الأنماط قابلة للتوسعة عبر فلتر wzsi_bot_patterns
+     *
+     * @param string $user_agent
+     * @return bool
+     */
+    private function is_bot($user_agent)
+    {
+        $ua = strtolower((string) $user_agent);
+        if ('' === $ua) {
+            return false;
+        }
+
+        $patterns = array(
+            'bot', 'crawl', 'spider', 'slurp', 'bingpreview', 'facebookexternalhit',
+            'curl', 'wget', 'python', 'java/', 'go-http-client', 'headless',
+            'lighthouse', 'ahrefs', 'semrush', 'mj12', 'dotbot', 'petalbot',
+            'monitoring', 'uptime', 'pinger', 'fetcher', 'scan', 'preview',
+        );
+        $patterns = apply_filters('wzsi_bot_patterns', $patterns);
+
+        foreach ((array) $patterns as $pattern) {
+            $pattern = strtolower((string) $pattern);
+            if ('' !== $pattern && false !== strpos($ua, $pattern)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * التحقق إن كان البحث صالحاً للتسجيل
      */
     private function should_log($term, $is_ajax = false)
@@ -144,6 +176,15 @@ class WZSI_Tracker
 
         if (empty($settings['enabled'])) {
             return false;
+        }
+
+        // F-1: فلترة روبوتات الزحف — لا تُحصى كسرِيحات بحث حقيقية
+        if (!empty($settings['exclude_bots'])) {
+            $ua = isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])) : '';
+            if ($this->is_bot($ua)) {
+                $this->debug_note('should_log', $term, 0, 'skip', 'bot UA مرفوض');
+                return false;
+            }
         }
 
         $term = trim($term);

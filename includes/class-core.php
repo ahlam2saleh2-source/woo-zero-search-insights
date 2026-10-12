@@ -49,8 +49,59 @@ class WZSI_Core
         // بدء مجدول الكرون
         WZSI_Cron::instance();
 
+        // F-8: نقاط REST للقراءة فقط (wzsi/v1)
+        add_action('rest_api_init', array($this, 'register_rest_routes'));
+
+        // TD-3: أدوات الخصوصية (exporter/eraser)
+        WZSI_Privacy::instance();
+
         // خطاف لإضافة معلومات في footer الأدمين
         add_action('in_admin_footer', array($this, 'maybe_add_admin_footer'));
+    }
+
+    /**
+     * F-8: تسجيل نقاط REST للقراءة فقط
+     * المصادقة القياسية لوردبريس (Application Passwords / Cookie) + صلاحية manage_woocommerce
+     * الاستجابة بلا أي بيانات شخصية (مصطلحات وأرقام فقط — لا IP ولا user_agent)
+     */
+    public function register_rest_routes()
+    {
+        register_rest_route('wzsi/v1', '/stats', array(
+            'methods'             => 'GET',
+            'callback'            => array($this, 'rest_stats'),
+            'permission_callback' => array($this, 'rest_permission'),
+            'args'                => array(
+                'days' => array('default' => 30, 'sanitize_callback' => 'absint'),
+            ),
+        ));
+
+        register_rest_route('wzsi/v1', '/top-terms', array(
+            'methods'             => 'GET',
+            'callback'            => array($this, 'rest_top_terms'),
+            'permission_callback' => array($this, 'rest_permission'),
+            'args'                => array(
+                'days'  => array('default' => 30, 'sanitize_callback' => 'absint'),
+                'limit' => array('default' => 20, 'sanitize_callback' => 'absint'),
+            ),
+        ));
+    }
+
+    public function rest_permission()
+    {
+        return current_user_can(WZSI_CAP);
+    }
+
+    public function rest_stats($request)
+    {
+        $days = max(0, (int) $request->get_param('days'));
+        return rest_ensure_response(WZSI_Database::get_stats($days));
+    }
+
+    public function rest_top_terms($request)
+    {
+        $days  = max(0, (int) $request->get_param('days'));
+        $limit = min(100, max(1, (int) $request->get_param('limit')));
+        return rest_ensure_response(WZSI_Database::get_top_zero_searches($limit, $days));
     }
 
     /**

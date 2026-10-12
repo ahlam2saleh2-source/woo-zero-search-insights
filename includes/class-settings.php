@@ -39,10 +39,20 @@ class WZSI_Settings
             'track_anonymous'     => 1,
             'ip_anonymize'        => 1,
             'auto_cleanup'        => 1,
+            'exclude_bots'        => 1,
+            'mapping_behavior'    => 'none',
             'slack_webhook_url'    => '',
             'slack_enabled'        => 0,
             'discord_webhook_url' => '',
             'discord_enabled'      => 0,
+            'telegram_enabled'    => 0,
+            'telegram_bot_token'  => '',
+            'telegram_chat_id'    => '',
+            'notify_min_occurrences' => 1,
+            'digest_enabled'      => 0,
+            'digest_frequency'    => 'weekly',
+            'digest_email'        => '',
+            'digest_last_sent'    => '',
             'dashboard_widget_enabled' => 1,
             'premium_ui_enabled'   => 1,
             'dark_mode'            => 0,
@@ -76,6 +86,7 @@ class WZSI_Settings
             'track_anonymous' => 'field_track_anonymous',
             'ip_anonymize'    => 'field_ip_anonymize',
             'auto_cleanup'   => 'field_auto_cleanup',
+            'exclude_bots'   => 'field_exclude_bots',
         );
 
         foreach ($fields as $key => $label_key) {
@@ -94,10 +105,21 @@ class WZSI_Settings
         add_settings_field('wzsi_max_length', wzsi_t('field_max_length'), array($this, 'render_number_field'), 'wzsi_settings_page', 'wzsi_general_section', array('key' => 'max_term_length', 'min' => 10, 'max' => 255));
         add_settings_field('wzsi_excluded', wzsi_t('field_excluded'), array($this, 'render_textarea_field'), 'wzsi_settings_page', 'wzsi_general_section', array('key' => 'excluded_terms'));
 
-        // قسم Slack/Discord
+        // قسم F-4: الربط الذكي
+        add_settings_section(
+            'wzsi_mapping_section',
+            wzsi_t('section_mapping'),
+            function () {
+                echo '<p>' . esc_html(wzsi_t('desc_mapping_behavior')) . '</p>';
+            },
+            'wzsi_settings_page'
+        );
+        add_settings_field('wzsi_mapping_behavior', wzsi_t('field_mapping_behavior'), array($this, 'render_mapping_behavior_field'), 'wzsi_settings_page', 'wzsi_mapping_section', array());
+
+        // قسم Slack/Discord/Telegram + عتبة الإشعارات
         add_settings_section(
             'wzsi_webhooks_section',
-            wzsi_t('section_ui') . ' - Slack/Discord',
+            wzsi_t('section_ui') . ' - Slack / Discord / Telegram',
             '__return_false',
             'wzsi_settings_page'
         );
@@ -106,6 +128,25 @@ class WZSI_Settings
         add_settings_field('wzsi_slack_url', 'Slack Webhook URL', array($this, 'render_url_field'), 'wzsi_settings_page', 'wzsi_webhooks_section', array('key' => 'slack_webhook_url'));
         add_settings_field('wzsi_discord', wzsi_t('section_ui') . ' - Discord', array($this, 'render_checkbox_field'), 'wzsi_settings_page', 'wzsi_webhooks_section', array('key' => 'discord_enabled'));
         add_settings_field('wzsi_discord_url', 'Discord Webhook URL', array($this, 'render_url_field'), 'wzsi_settings_page', 'wzsi_webhooks_section', array('key' => 'discord_webhook_url'));
+        add_settings_field('wzsi_telegram', wzsi_t('section_ui') . ' - Telegram', array($this, 'render_checkbox_field'), 'wzsi_settings_page', 'wzsi_webhooks_section', array('key' => 'telegram_enabled'));
+        add_settings_field('wzsi_telegram_token', wzsi_t('field_telegram_token'), array($this, 'render_text_field'), 'wzsi_settings_page', 'wzsi_webhooks_section', array('key' => 'telegram_bot_token'));
+        add_settings_field('wzsi_telegram_chat', wzsi_t('field_telegram_chat'), array($this, 'render_text_field'), 'wzsi_settings_page', 'wzsi_webhooks_section', array('key' => 'telegram_chat_id'));
+        add_settings_field('wzsi_notify_min', wzsi_t('field_notify_min'), array($this, 'render_number_field'), 'wzsi_settings_page', 'wzsi_webhooks_section', array('key' => 'notify_min_occurrences', 'min' => 1, 'max' => 1000));
+        add_settings_field('wzsi_test_buttons', wzsi_t('btn_test'), array($this, 'render_test_buttons'), 'wzsi_settings_page', 'wzsi_webhooks_section', array());
+
+        // قسم F-3: التقرير البريدي الدوري
+        add_settings_section(
+            'wzsi_digest_section',
+            wzsi_t('section_digest'),
+            function () {
+                echo '<p>' . esc_html(wzsi_t('desc_digest')) . '</p>';
+            },
+            'wzsi_settings_page'
+        );
+        add_settings_field('wzsi_digest_enabled', wzsi_t('field_digest_enabled'), array($this, 'render_checkbox_field'), 'wzsi_settings_page', 'wzsi_digest_section', array('key' => 'digest_enabled'));
+        add_settings_field('wzsi_digest_freq', wzsi_t('field_digest_frequency'), array($this, 'render_digest_freq_field'), 'wzsi_settings_page', 'wzsi_digest_section', array());
+        add_settings_field('wzsi_digest_email', wzsi_t('field_digest_email'), array($this, 'render_email_field'), 'wzsi_settings_page', 'wzsi_digest_section', array('key' => 'digest_email'));
+        add_settings_field('wzsi_digest_test', wzsi_t('digest_send_test'), array($this, 'render_digest_test_button'), 'wzsi_settings_page', 'wzsi_digest_section', array());
 
         // قسم الواجهة
         add_settings_section(
@@ -124,6 +165,17 @@ class WZSI_Settings
         add_settings_field('wzsi_premium_ui', wzsi_t('field_premium_ui'), array($this, 'render_checkbox_field'), 'wzsi_settings_page', 'wzsi_ui_section', array('key' => 'premium_ui_enabled'));
         // الإصلاح: سجل التشخيص أصبح opt-in من الإعدادات (كان مكتوبًا في DB عند كل بحث)
         add_settings_field('wzsi_capture_debug', wzsi_t('field_capture_debug'), array($this, 'render_checkbox_field'), 'wzsi_settings_page', 'wzsi_ui_section', array('key' => 'capture_debug'));
+
+        // قسم TD-2: نسخ الإعدادات (تصدير/استيراد JSON)
+        add_settings_section(
+            'wzsi_backup_section',
+            wzsi_t('section_backup'),
+            function () {
+                echo '<p>' . esc_html(wzsi_t('desc_backup')) . '</p>';
+            },
+            'wzsi_settings_page'
+        );
+        add_settings_field('wzsi_backup_buttons', wzsi_t('section_backup'), array($this, 'render_backup_buttons'), 'wzsi_settings_page', 'wzsi_backup_section', array());
     }
 
     public function handle_actions()
@@ -145,6 +197,54 @@ class WZSI_Settings
                 WZSI_Database::truncate_logs();
                 add_settings_error('wzsi', 'wzsi_cleared', wzsi_t('notice_logs_cleared'), 'updated');
                 break;
+
+            // F-7: أزرار تجربة القنوات
+            case 'test_slack':
+            case 'test_discord':
+            case 'test_telegram':
+                $channel = str_replace('test_', '', $action);
+                $result = WZSI_Webhooks::instance()->send_test($channel);
+                wp_safe_redirect(add_query_arg(
+                    'wzsi_test',
+                    $result['ok'] ? 'ok_' . $channel : 'fail_' . $channel,
+                    admin_url('admin.php?page=wzsi-settings')
+                ));
+                exit;
+
+            // F-3: إرسال تقرير تجريبي فوراً
+            case 'digest_test':
+                $result = WZSI_Email::instance()->send_digest(true);
+                wp_safe_redirect(add_query_arg(
+                    'wzsi_digest_test',
+                    $result['ok'] ? 'ok' : 'fail',
+                    admin_url('admin.php?page=wzsi-settings')
+                ));
+                exit;
+
+            // TD-2: تصدير الإعدادات JSON
+            case 'export_settings':
+                $settings = get_option('wzsi_settings', array());
+                nocache_headers();
+                header('Content-Type: application/json; charset=utf-8');
+                header('Content-Disposition: attachment; filename=wzsi-settings-' . gmdate('Y-m-d') . '.json');
+                echo wp_json_encode($settings, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                exit;
+
+            // TD-2: استيراد الإعدادات JSON
+            case 'import_settings':
+                $import_ok = false;
+                if (!empty($_FILES['wzsi_settings_file']['tmp_name']) && is_uploaded_file($_FILES['wzsi_settings_file']['tmp_name'])) {
+                    $raw = file_get_contents($_FILES['wzsi_settings_file']['tmp_name']);
+                    $data = json_decode($raw, true);
+                    if (is_array($data)) {
+                        // الاستيراد يمر على نفس منظّف الإعدادات حقلًا بحقل — آمن
+                        $clean = $this->sanitize_settings($data);
+                        update_option('wzsi_settings', $clean);
+                        $import_ok = true;
+                    }
+                }
+                wp_safe_redirect(add_query_arg('wzsi_import', $import_ok ? 'ok' : 'bad', admin_url('admin.php?page=wzsi-settings')));
+                exit;
         }
     }
 
@@ -160,25 +260,47 @@ class WZSI_Settings
         $sanitized['track_anonymous'] = !empty($input['track_anonymous']) ? 1 : 0;
         $sanitized['ip_anonymize']    = !empty($input['ip_anonymize']) ? 1 : 0;
         $sanitized['auto_cleanup']    = !empty($input['auto_cleanup']) ? 1 : 0;
+        $sanitized['exclude_bots']    = !empty($input['exclude_bots']) ? 1 : 0;
+        $allowed_behaviors = array('none', 'add_result', 'redirect');
+        $sanitized['mapping_behavior'] = in_array($input['mapping_behavior'] ?? 'none', $allowed_behaviors, true) ? $input['mapping_behavior'] : 'none';
         $sanitized['slack_webhook_url']    = esc_url_raw($input['slack_webhook_url'] ?? '');
         $sanitized['slack_enabled']        = !empty($input['slack_enabled']) ? 1 : 0;
         $sanitized['discord_webhook_url'] = esc_url_raw($input['discord_webhook_url'] ?? '');
         $sanitized['discord_enabled']      = !empty($input['discord_enabled']) ? 1 : 0;
+        $sanitized['telegram_enabled']    = !empty($input['telegram_enabled']) ? 1 : 0;
+        $sanitized['telegram_bot_token']  = sanitize_text_field($input['telegram_bot_token'] ?? '');
+        $sanitized['telegram_chat_id']    = sanitize_text_field($input['telegram_chat_id'] ?? '');
+        $sanitized['notify_min_occurrences'] = max(1, min(1000, (int) ($input['notify_min_occurrences'] ?? 1)));
+        $sanitized['digest_enabled']      = !empty($input['digest_enabled']) ? 1 : 0;
+        $freq_in = isset($input['digest_frequency']) ? $input['digest_frequency'] : 'weekly';
+        $sanitized['digest_frequency']    = in_array($freq_in, array('daily', 'weekly'), true) ? $freq_in : 'weekly';
+        $sanitized['digest_email']        = sanitize_email($input['digest_email'] ?? '');
         $sanitized['dashboard_widget_enabled'] = !empty($input['dashboard_widget_enabled']) ? 1 : 0;
         $sanitized['premium_ui_enabled']   = !empty($input['premium_ui_enabled']) ? 1 : 0;
         $sanitized['dark_mode']            = !empty($input['dark_mode']) ? 1 : 0;
         $sanitized['white_label']          = !empty($input['white_label']) ? 1 : 0;
         $sanitized['capture_debug']        = !empty($input['capture_debug']) ? 1 : 0;
         $allowed_themes = array('light', 'dark', 'ocean', 'forest', 'sunset', 'midnight');
-        $sanitized['theme']                = in_array($input['theme'] ?? 'light', $allowed_themes, true) ? $input['theme'] : 'light';
+        $theme_in = isset($input['theme']) ? $input['theme'] : 'light';
+        $sanitized['theme']                = in_array($theme_in, $allowed_themes, true) ? $theme_in : 'light';
         $default_lang = function_exists('wzsi_default_ui_lang') ? wzsi_default_ui_lang() : 'ar';
-        $sanitized['ui_lang']              = in_array($input['ui_lang'] ?? $default_lang, array('ar', 'en'), true) ? $input['ui_lang'] : $default_lang;
+        $lang_in = isset($input['ui_lang']) ? $input['ui_lang'] : $default_lang;
+        $sanitized['ui_lang']              = in_array($lang_in, array('ar', 'en'), true) ? $lang_in : $default_lang;
+
+        // حارس مهم: digest_last_sent ليس حقلاً في النموذج — لا يُمسح عند حفظ الإعدادات
+        // وإلا أعاد البريد الإرسال فوراً بعد كل حفظ
+        $current = get_option('wzsi_settings', array());
+        $sanitized['digest_last_sent'] = isset($input['digest_last_sent'])
+            ? sanitize_text_field((string) $input['digest_last_sent'])
+            : (string) ($current['digest_last_sent'] ?? '');
+
         return $sanitized;
     }
 
     public function render_checkbox_field($args)
     {
-        $options = get_option('wzsi_settings', self::get_defaults());
+        // دمج الافتراضيات: المفاتيح الجديدة (v1.1.0) تظهر بحالتها الصحيحة قبل أول حفظ
+        $options = wp_parse_args(get_option('wzsi_settings', array()), self::get_defaults());
         $value = !empty($options[$args['key']]) ? 1 : 0;
         echo '<label><input type="checkbox" name="wzsi_settings[' . esc_attr($args['key']) . ']" value="1" ' . checked($value, 1, false) . '/> ';
         echo esc_html(wzsi_t('btn_yes_enable'));
@@ -187,7 +309,7 @@ class WZSI_Settings
 
     public function render_number_field($args)
     {
-        $options = get_option('wzsi_settings', self::get_defaults());
+        $options = wp_parse_args(get_option('wzsi_settings', array()), self::get_defaults());
         $value = $options[$args['key']] ?? '';
         $min = isset($args['min']) ? 'min="' . esc_attr($args['min']) . '"' : '';
         $max = isset($args['max']) ? 'max="' . esc_attr($args['max']) . '"' : '';
@@ -207,6 +329,116 @@ class WZSI_Settings
         $options = get_option('wzsi_settings', self::get_defaults());
         $value = $options[$args['key']] ?? '';
         echo '<input type="url" name="wzsi_settings[' . esc_attr($args['key']) . ']" value="' . esc_attr($value) . '" class="regular-text" placeholder="https://..." />';
+    }
+
+    /**
+     * F-7: حقل نص عام (توكن Telegram / معرف الدردشة)
+     */
+    public function render_text_field($args)
+    {
+        $options = get_option('wzsi_settings', self::get_defaults());
+        $value = $options[$args['key']] ?? '';
+        echo '<input type="text" name="wzsi_settings[' . esc_attr($args['key']) . ']" value="' . esc_attr($value) . '" class="regular-text" autocomplete="off" />';
+    }
+
+    /**
+     * F-3: حقل بريد
+     */
+    public function render_email_field($args)
+    {
+        $options = get_option('wzsi_settings', self::get_defaults());
+        $value = $options[$args['key']] ?? '';
+        echo '<input type="email" name="wzsi_settings[' . esc_attr($args['key']) . ']" value="' . esc_attr($value) . '" class="regular-text" placeholder="reports@example.com" />';
+    }
+
+    /**
+     * F-3: اختيار تردد التقرير
+     */
+    public function render_digest_freq_field()
+    {
+        $options = get_option('wzsi_settings', self::get_defaults());
+        $current = $options['digest_frequency'] ?? 'weekly';
+        echo '<select name="wzsi_settings[digest_frequency]">';
+        printf('<option value="weekly" %s>%s</option>', selected($current, 'weekly', false), esc_html(wzsi_t('digest_weekly')));
+        printf('<option value="daily" %s>%s</option>', selected($current, 'daily', false), esc_html(wzsi_t('digest_daily')));
+        echo '</select>';
+    }
+
+    /**
+     * F-7: أزرار تجربة القنوات الثلاث
+     */
+    public function render_test_buttons()
+    {
+        $nonce = wp_nonce_field(WZSI_NONCE_ACTION, 'wzsi_nonce', true, false);
+        $channels = array('slack' => 'Slack', 'discord' => 'Discord', 'telegram' => 'Telegram');
+        echo '<div style="display:flex;gap:8px;flex-wrap:wrap;">';
+        foreach ($channels as $channel => $label) {
+            printf(
+                '<form method="post" style="display:inline;">%s<input type="hidden" name="wzsi_action" value="test_%s" /><button type="submit" class="button button-secondary">%s %s</button></form>',
+                $nonce,
+                esc_attr($channel),
+                '&#9654;',
+                esc_html($label)
+            );
+        }
+        echo '</div>';
+        echo '<p class="description">' . esc_html(wzsi_t('desc_test_buttons')) . '</p>';
+    }
+
+    /**
+     * F-3: زر إرسال تقرير تجريبي
+     */
+    public function render_digest_test_button()
+    {
+        $nonce = wp_nonce_field(WZSI_NONCE_ACTION, 'wzsi_nonce', true, false);
+        printf(
+            '<form method="post" style="display:inline;">%s<input type="hidden" name="wzsi_action" value="digest_test" /><button type="submit" class="button button-secondary">%s %s</button></form>',
+            $nonce,
+            '&#9993;',
+            esc_html(wzsi_t('digest_send_test'))
+        );
+    }
+
+    /**
+     * F-4: اختيار سلوك الربط في واجهة المتجر
+     */
+    public function render_mapping_behavior_field()
+    {
+        $options = get_option('wzsi_settings', self::get_defaults());
+        $current = $options['mapping_behavior'] ?? 'none';
+        echo '<select name="wzsi_settings[mapping_behavior]">';
+        printf('<option value="none" %s>%s</option>', selected($current, 'none', false), esc_html(wzsi_t('map_behavior_none')));
+        printf('<option value="add_result" %s>%s</option>', selected($current, 'add_result', false), esc_html(wzsi_t('map_behavior_add_result')));
+        printf('<option value="redirect" %s>%s</option>', selected($current, 'redirect', false), esc_html(wzsi_t('map_behavior_redirect')));
+        echo '</select>';
+        echo '<p class="description">' . esc_html(wzsi_t('desc_mapping_options')) . '</p>';
+    }
+
+    /**
+     * TD-2: أزرار تصدير/استيراد الإعدادات
+     */
+    public function render_backup_buttons()
+    {
+        $nonce = wp_nonce_field(WZSI_NONCE_ACTION, 'wzsi_nonce', true, false);
+        echo '<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;">';
+
+        // تصدير
+        printf(
+            '<form method="post" style="display:inline;">%s<input type="hidden" name="wzsi_action" value="export_settings" /><button type="submit" class="button button-secondary">%s %s</button></form>',
+            $nonce,
+            '&#11015;',
+            esc_html(wzsi_t('btn_export_settings'))
+        );
+
+        // استيراد
+        printf(
+            '<form method="post" enctype="multipart/form-data" style="display:inline;">%s<input type="hidden" name="wzsi_action" value="import_settings" />',
+            $nonce
+        );
+        printf('<input type="file" name="wzsi_settings_file" accept=".json,application/json" /> ');
+        printf('<button type="submit" class="button button-secondary">%s %s</button></form>', '&#11014;', esc_html(wzsi_t('btn_import_settings')));
+
+        echo '</div>';
     }
 
     public function render_theme_selector($args)
@@ -248,6 +480,28 @@ class WZSI_Settings
     {
         if (!current_user_can(WZSI_CAP)) {
             wp_die(wzsi_t('notice_no_permission'));
+        }
+
+        // تنبيهات نتائج أزرار التجربة والاستيراد (تعود عبر redirect)
+        $test = isset($_GET['wzsi_test']) ? sanitize_key(wp_unslash($_GET['wzsi_test'])) : '';
+        if ($test && 0 === strpos($test, 'ok_')) {
+            echo '<div class="notice notice-success is-dismissible"><p>&#9989; ' . esc_html(wzsi_t('msg_test_ok')) . '</p></div>';
+        } elseif ($test && 0 === strpos($test, 'fail_')) {
+            echo '<div class="notice notice-error is-dismissible"><p>&#10060; ' . esc_html(wzsi_t('msg_test_fail')) . '</p></div>';
+        }
+
+        $digest_test = isset($_GET['wzsi_digest_test']) ? sanitize_key(wp_unslash($_GET['wzsi_digest_test'])) : '';
+        if ('ok' === $digest_test) {
+            echo '<div class="notice notice-success is-dismissible"><p>&#9989; ' . esc_html(wzsi_t('digest_test_ok')) . '</p></div>';
+        } elseif ('fail' === $digest_test) {
+            echo '<div class="notice notice-error is-dismissible"><p>&#10060; ' . esc_html(wzsi_t('digest_test_fail')) . '</p></div>';
+        }
+
+        $import = isset($_GET['wzsi_import']) ? sanitize_key(wp_unslash($_GET['wzsi_import'])) : '';
+        if ('ok' === $import) {
+            echo '<div class="notice notice-success is-dismissible"><p>&#9989; ' . esc_html(wzsi_t('msg_import_ok')) . '</p></div>';
+        } elseif ('bad' === $import) {
+            echo '<div class="notice notice-error is-dismissible"><p>&#10060; ' . esc_html(wzsi_t('msg_import_bad')) . '</p></div>';
         }
         ?>
         <div class="wrap wzsm-wrap">

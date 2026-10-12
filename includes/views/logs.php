@@ -21,6 +21,23 @@ $base_url = admin_url('admin.php?page=wzsi-logs');
     <h1>📋 <?php echo esc_html(wzsi_t('page_logs')); ?></h1>
     <p class="wzsm-subtitle"><?php echo esc_html(wzsi_t('subtitle_logs')); ?></p>
 
+    <?php // F-5: فلاتر السجلات — كل القيم عبر GET مع تحقق في render_logs_page ?>
+    <form method="get" class="wzsm-filters-bar">
+        <input type="hidden" name="page" value="wzsi-logs">
+        <input type="hidden" name="zero_only" value="<?php echo esc_attr($zero_only); ?>">
+        <input type="search" name="q" value="<?php echo esc_attr($q); ?>"
+               placeholder="<?php echo esc_attr(wzsi_t('filter_search')); ?>">
+        <label><?php echo esc_html(wzsi_t('filter_from')); ?> <input type="date" name="from" value="<?php echo esc_attr($from_raw); ?>"></label>
+        <label><?php echo esc_html(wzsi_t('filter_to')); ?> <input type="date" name="to" value="<?php echo esc_attr($to_raw); ?>"></label>
+        <select name="type">
+            <option value="any" <?php selected($type, 'any'); ?>><?php echo esc_html(wzsi_t('filter_all_types')); ?></option>
+            <option value="0" <?php selected($type, '0'); ?>>Page</option>
+            <option value="1" <?php selected($type, '1'); ?>>AJAX</option>
+        </select>
+        <button type="submit" class="button button-primary"><?php echo esc_html(wzsi_t('filter_apply')); ?></button>
+        <a href="<?php echo esc_url(admin_url('admin.php?page=wzsi-logs&zero_only=' . (int) $zero_only)); ?>" class="button"><?php echo esc_html(wzsi_t('filter_reset')); ?></a>
+    </form>
+
     <div class="wzsm-tabs">
         <a href="<?php echo esc_url(add_query_arg('zero_only', 1, $base_url)); ?>"
            class="nav-tab <?php echo $zero_only ? 'nav-tab-active' : ''; ?>">

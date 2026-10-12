@@ -12,6 +12,8 @@ if (!defined('ABSPATH')) {
 class WZSI_Cron
 {
     const CLEANUP_HOOK = 'wzsm_daily_cleanup';
+    // F-3/F-2: نبضة يومية للتقرير البريدي وإكمال ترحيل التطبيع
+    const TICK_HOOK = 'wzsi_daily_tick';
 
     private static $instance = null;
 
@@ -26,6 +28,7 @@ class WZSI_Cron
     private function __construct()
     {
         add_action(self::CLEANUP_HOOK, array($this, 'run_cleanup'));
+        add_action(self::TICK_HOOK, array($this, 'run_daily_tick'));
     }
 
     /**
@@ -36,6 +39,9 @@ class WZSI_Cron
         if (!wp_next_scheduled(self::CLEANUP_HOOK)) {
             wp_schedule_event(time(), 'daily', self::CLEANUP_HOOK);
         }
+        if (!wp_next_scheduled(self::TICK_HOOK)) {
+            wp_schedule_event(time() + HOUR_IN_SECONDS, 'daily', self::TICK_HOOK);
+        }
     }
 
     /**
@@ -44,6 +50,19 @@ class WZSI_Cron
     public static function clear_schedules()
     {
         wp_clear_scheduled_hook(self::CLEANUP_HOOK);
+        wp_clear_scheduled_hook(self::TICK_HOOK);
+    }
+
+    /**
+     * F-2: النبضة اليومية تكمل ترحيل التطبيع إن كان معلقاً
+     * (للمواقع الكبيرة التي لا يدخل مسؤولها لوحة التحكم كثيراً)
+     */
+    public function run_daily_tick()
+    {
+        if (!get_option('wzsi_norm_migration_done')) {
+            require_once WZSI_PLUGIN_DIR . 'includes/class-database.php';
+            WZSI_Database::maybe_migrate_normalized_terms();
+        }
     }
 
     /**

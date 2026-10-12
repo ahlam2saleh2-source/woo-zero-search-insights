@@ -2,8 +2,8 @@
 /**
  * Plugin Name:       Woo Zero Search Insights
  * Plugin URI:        https://github.com/ahlam2saleh2-source/woo-zero-search-insights
- * Description:       Track WooCommerce searches that return no results. Analytics dashboard, CSV export, Slack/Discord alerts, 6 admin themes, AR/EN, white-label.
- * Version:           1.0.1
+ * Description:       Track WooCommerce searches that return no results. Dashboard, CSV export, Slack/Discord/Telegram alerts, email digest, term→product mapping, 6 themes, AR/EN.
+ * Version:           1.1.0
  * Author:            az-soft4media
  * Author URI:        https://troyawin.tech
  * Text Domain:       woo-zero-search-insights
@@ -13,7 +13,7 @@
  * Requires at least: 5.6
  * Requires PHP:      7.4
  * WC requires at least: 5.0
- * WC tested up to:   10.1
+ * WC tested up to:   11.2
  */
 
 if (!defined('ABSPATH')) {
@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
 }
 
 // ════════════ التعريفات ════════════
-define('WZSI_VERSION',           '1.0.1');
+define('WZSI_VERSION',           '1.1.0');
 define('WZSI_PLUGIN_FILE',        __FILE__);
 define('WZSI_PLUGIN_DIR',         plugin_dir_path(__FILE__));
 define('WZSI_PLUGIN_URL',         plugin_dir_url(__FILE__));
@@ -60,6 +60,11 @@ spl_autoload_register(function ($class) {
     }
 });
 
+// ════════════ F-8: أوامر WP-CLI (wzsi stats/top/logs/clear/prune) ════════════
+if (defined('WP_CLI') && WP_CLI) {
+    require_once WZSI_PLUGIN_DIR . 'includes/cli.php';
+}
+
 // ════════════ التهيئة ════════════
 function wzsi_init() {
     // نظام الترجمة المخصص (يُحمّل أولاً دائمًا — حتى بدون WooCommerce)
@@ -80,7 +85,13 @@ function wzsi_init() {
     // الكلاسات الأساسية
     WZSI_Core::instance();
 
-    // كلاسات Premium (بدون أي ميزات بريد)
+    // F-4: الربط الذكي (مصطلح ← منتج/تصنيف)
+    WZSI_Mappings::instance();
+
+    // F-3: التقرير البريدي الدوري
+    WZSI_Email::instance();
+
+    // كلاسات Premium
     WZSI_Dashboard_Widget::instance();
     WZSI_Webhooks::instance();
     WZSI_Premium_UI::instance();
@@ -117,6 +128,16 @@ add_action('admin_init', function () {
         require_once WZSI_PLUGIN_DIR . 'includes/class-database.php';
         WZSI_Database::create_table();
         update_option('wzsi_db_version', WZSI_VERSION);
+
+        // الترقيات لا تمر بالتفعيل — نضمن جدولة النبضة اليومية الجديدة (F-3)
+        require_once WZSI_PLUGIN_DIR . 'includes/class-cron.php';
+        WZSI_Cron::schedule_events();
+    }
+
+    // F-2: إكمال ترحيل التطبيع العربي دفعات صغيرة عند دخول الأدمين (وحتى عبر الكرون)
+    if (!get_option('wzsi_norm_migration_done')) {
+        require_once WZSI_PLUGIN_DIR . 'includes/class-database.php';
+        WZSI_Database::maybe_migrate_normalized_terms();
     }
 });
 

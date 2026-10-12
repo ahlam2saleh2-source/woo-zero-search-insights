@@ -30,18 +30,28 @@ function wzsi_uninstall_site()
     delete_option('wzsi_installed_at');
     delete_option('wzsi_capture_debug');
 
-    // جدولة التنظيف اليومي — الخطاف الفعلي كما في WZSI_Cron::CLEANUP_HOOK
-    wp_clear_scheduled_hook('wzsm_daily_cleanup');
+    // F-2: خيارات ترحيل التطبيع العربي + TD-1: مفتاح إصدار الكاش
+    delete_option('wzsi_norm_migration_cursor');
+    delete_option('wzsi_norm_migration_done');
+    delete_option('wzsi_cache_ver');
 
-    // جدول السجلات
+    // جدولة التنظيف اليومي + النبضة اليومية (F-3)
+    wp_clear_scheduled_hook('wzsm_daily_cleanup');
+    wp_clear_scheduled_hook('wzsi_daily_tick');
+
+    // جدول السجلات + جدول الربط الذكي (F-4)
     $table = $wpdb->prefix . 'woo_zero_search_logs';
     $wpdb->query("DROP TABLE IF EXISTS {$table}");
+    $maps = $wpdb->prefix . 'woo_zero_search_maps';
+    $wpdb->query("DROP TABLE IF EXISTS {$maps}");
 
-    // transients منع سبام الإشعارات (wzsi_wh_* لكل مصطلح)
+    // transients منع سبام الإشعارات (wzsi_wh_*) + كاش اللوحة (TD-1) + قفل الترحيل
+    // صيغة LIKE بلا شرطات مُهرّبة — تعمل على MySQL وSQLite معًا
     $wpdb->query(
         "DELETE FROM {$wpdb->options}
-         WHERE option_name LIKE '\_transient\_wzsi\_wh\_%'
-            OR option_name LIKE '\_transient\_timeout\_wzsi\_wh\_%'"
+         WHERE option_name LIKE '%wzsi_wh_%'
+            OR option_name LIKE '%wzsi_cache_%'
+            OR option_name LIKE '%wzsi_norm_migrating%'"
     );
 
     // transients قديمة عامة

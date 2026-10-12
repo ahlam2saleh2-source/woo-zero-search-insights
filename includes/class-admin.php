@@ -41,6 +41,7 @@ class WZSI_Admin
         );
 
         add_submenu_page('wzsi-dashboard', wzsi_t('menu_dashboard'), wzsi_t('menu_dashboard'), WZSI_CAP, 'wzsi-dashboard', array($this, 'render_dashboard_page'));
+        add_submenu_page('wzsi-dashboard', wzsi_t('menu_mappings'), '&#128279; ' . wzsi_t('menu_mappings'), WZSI_CAP, 'wzsi-mappings', array($this, 'render_mappings_page'));
         add_submenu_page('wzsi-dashboard', wzsi_t('menu_logs'), wzsi_t('menu_logs'), WZSI_CAP, 'wzsi-logs', array($this, 'render_logs_page'));
         add_submenu_page('wzsi-dashboard', wzsi_t('menu_settings'), wzsi_t('menu_settings'), WZSI_CAP, 'wzsi-settings', array('WZSI_Settings', 'render_settings_page'));
         add_submenu_page('wzsi-dashboard', wzsi_t('menu_health_check'), '🩺 ' . wzsi_t('menu_health_check'), WZSI_CAP, 'wzsi-health-check', array($this, 'render_health_check_page'));
@@ -75,6 +76,12 @@ class WZSI_Admin
             'cleared'       => wzsi_t('alert_cleared'),
             'copied'        => wzsi_t('alert_copied'),
             'click_to_copy' => wzsi_t('click_to_copy'),
+            // F-4: الربط الذكي
+            'map_saved'       => wzsi_t('map_saved'),
+            'map_failed'      => wzsi_t('map_failed'),
+            'map_error_url'   => wzsi_t('map_error_url'),
+            'map_error_target' => wzsi_t('map_error_target'),
+            'map_error_term'  => wzsi_t('map_error_term'),
         ));
     }
 
@@ -100,7 +107,18 @@ class WZSI_Admin
 
         $stats = WZSI_Database::get_stats($days);
         $top_searches = WZSI_Database::get_top_zero_searches(20, $days);
-        $trend = WZSI_Database::get_daily_trend($days > 0 ? $days : 90);
+
+        // F-6: مقارنة الفترة السابقة (الكل = بلا مقارنة)
+        if ($days > 0) {
+            $trend_pair = WZSI_Database::get_daily_trend($days, true);
+            $trend = $trend_pair['current'];
+            $trend_previous = $trend_pair['previous'];
+            $compare = WZSI_Database::get_compare_stats($days);
+        } else {
+            $trend = WZSI_Database::get_daily_trend(90);
+            $trend_previous = array();
+            $compare = null;
+        }
 
         require WZSI_PLUGIN_DIR . 'includes/views/dashboard.php';
     }
@@ -111,19 +129,70 @@ class WZSI_Admin
             wp_die(wzsi_t('notice_no_permission'));
         }
         $zero_only = isset($_GET['zero_only']) ? (int) $_GET['zero_only'] : 1;
+
+        // F-5: فلاتر السجلات — بحث نصي + تاريخ من/إلى + نوع الطلب
+        $q = isset($_GET['q']) ? sanitize_text_field(wp_unslash($_GET['q'])) : '';
+        $from_raw = isset($_GET['from']) ? sanitize_text_field(wp_unslash($_GET['from'])) : '';
+        $to_raw   = isset($_GET['to'])   ? sanitize_text_field(wp_unslash($_GET['to']))   : '';
+        $type     = isset($_GET['type']) ? sanitize_key(wp_unslash($_GET['type']))   : 'any';
+        if (!in_array($type, array('any', '0', '1'), true)) {
+            $type = 'any';
+        }
+
+        // تحقق صارم من التواريخ (Y-m-d)
+        $from = null;
+        $to   = null;
+        if ($from_raw) {
+            $d = DateTime::createFromFormat('Y-m-d', $from_raw);
+            if ($d && $d->format('Y-m-d') === $from_raw) {
+                $from = $d;
+            }
+        }
+        if ($to_raw) {
+            $d = DateTime::createFromFormat('Y-m-d', $to_raw);
+            if ($d && $d->format('Y-m-d') === $to_raw) {
+                $to = $d;
+            }
+        }
+
         $page = isset($_GET['paged']) ? max(1, (int) $_GET['paged']) : 1;
-        $per_page = 50;
-        $offset = ($page - 1) * $per_page;
 
-        global $wpdb;
-        $table = WZSI_Database::table_name();
-        $where = $zero_only ? "WHERE results_count = 0" : "WHERE 1=1";
+        $result = WZSI_Database::get_logs_filtered(array(
+            'zero_only' => $zero_only,
+            'q'         => $q,
+            'from'      => $from,
+            'to'        => $to,
+            'type'      => ('any' === $type) ? null : $type,
+            'page'      => $page,
+            'per_page'  => 50,
+        ));
 
-        $total = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$table} {$where}");
-        $logs = $wpdb->get_results("SELECT * FROM {$table} {$where} ORDER BY searched_at DESC LIMIT {$offset}, {$per_page}");
-        $pages = (int) ceil($total / $per_page);
+        $logs  = $result['rows'];
+        $total = $result['total'];
+        $pages = $result['pages'];
+        $offset = ($result['page'] - 1) * $result['per_page'];
 
         require WZSI_PLUGIN_DIR . 'includes/views/logs.php';
+    }
+
+    /**
+     * F-4: صفحة الربط الذكي
+     */
+    public function render_mappings_page()
+    {
+        if (!current_user_can(WZSI_CAP)) {
+            wp_die(wzsi_t('notice_no_permission'));
+        }
+
+        global $wpdb;
+        $maps_table = WZSI_Mappings::table_name();
+        $mappings = $wpdb->get_results("SELECT * FROM {$maps_table} ORDER BY id DESC LIMIT 200");
+        if (!is_array($mappings)) {
+            $mappings = array();
+        }
+        $settings = get_option('wzsi_settings', array());
+
+        require WZSI_PLUGIN_DIR . 'includes/views/mappings.php';
     }
 
     public function render_health_check_page()

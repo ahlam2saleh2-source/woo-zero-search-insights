@@ -2,11 +2,11 @@
 Contributors: azsoft4media
 Tags: woocommerce, search, analytics, zero results, ecommerce, insights
 Requires at least: 5.6
-Tested up to: 6.8
+Tested up to: 7.1
 Requires PHP: 7.4
 WC requires at least: 5.0
-WC tested up to: 10.1
-Stable tag: 1.0.1
+WC tested up to: 11.2
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,15 +24,21 @@ Discover what your customers search for — and never find. Full description in 
 
 **Key features**
 
-* **Automatic tracking** — captures every failed WooCommerce search (standard + AJAX live search) with zero configuration.
-* **Professional dashboard** — stat cards, daily trend chart, and a ranked table of top zero-result terms.
-* **Full search log** — every query recorded with anonymized IP, device type, timestamp, and request type.
+* **Automatic tracking** — captures every failed WooCommerce search (standard + AJAX live search + REST Store API) with zero configuration.
+* **Professional dashboard** — stat cards, daily trend chart with previous-period comparison, and a ranked table of top zero-result terms.
+* **Smart mappings (NEW in 1.1.0)** — map a zero-result term to a product/category/URL so visitors find something instead of an empty page.
+* **Scheduled email digest (NEW in 1.1.0)** — daily or weekly summary straight to your inbox.
+* **Telegram alerts (NEW in 1.1.0)** — alongside Slack & Discord, with per-channel test buttons and a notification threshold.
+* **Bot filtering (NEW in 1.1.0)** — crawlers no longer inflate your stats.
+* **Arabic-aware normalization (NEW in 1.1.0)** — "أحذية / احذيه / أحذيةَ" now count as ONE opportunity.
+* **Full search log** — every query recorded with anonymized IP, device type, timestamp, and request type; searchable and date-filterable.
 * **CSV export** — full or filtered export with UTF-8 BOM, Excel-ready and Arabic-safe.
-* **Slack & Discord webhooks** — instant alerts when search gaps appear.
 * **Flexible settings** — min/max term length, retention window, excluded terms, members/guests tracking.
 * **Automatic cleanup** — daily scheduled task removes logs older than your retention period.
-* **Privacy-first** — IP anonymization enabled by default (GDPR-friendly).
+* **Privacy-first** — IP anonymization enabled by default (GDPR-friendly), plus WP personal-data exporter/eraser-ready design.
 * **Instant actions** — delete a term or clear everything via AJAX, no page reloads.
+* **WP-CLI & REST (NEW in 1.1.0)** — `wp wzsi stats|top|logs|clear|prune` and read-only `wzsi/v1` endpoints for agencies.
+* **Settings backup (NEW in 1.1.0)** — export/import settings as JSON across stores.
 * **6 admin themes** — Light / Dark / Ocean / Forest / Sunset / Midnight, plus full white-label support.
 * **Bilingual** — complete Arabic & English interfaces, translation-ready (.pot included).
 * **Multisite compatible.**
@@ -47,16 +53,21 @@ Discover what your customers search for — and never find. Full description in 
 
 **المزايا الرئيسية**
 
-* **تتبع تلقائي**: يلتقط كل عمليات البحث في WooCommerce (العادية و AJAX) بدون أي إعداد مسبق.
-* **لوحة معلومات احترافية**: بطاقات إحصائية ورسوم بيانية للاتجاه اليومي.
-* **جدول أعلى المصطلحات بلا نتائج**: مرتب حسب التكرار مع آخر مرة بحث.
-* **سجل كامل**: كل عملية بحث مع IP مجهول ونوع الجهاز والتاريخ ونوع الطلب.
+* **تتبع تلقائي**: يلتقط كل عمليات البحث في WooCommerce (العادية و AJAX و REST Store API) بدون أي إعداد مسبق.
+* **لوحة معلومات احترافية**: بطاقات إحصائية ورسوم بيانية للاتجاه اليومي مع مقارنة الفترة السابقة.
+* **الربط الذكي (جديد 1.1.0)**: اربط المصطلح الصفري بمنتج/تصنيف/رابط فيظهر للزائر بدل صفحة فارغة.
+* **تقرير بريدي دوري (جديد 1.1.0)**: ملخص يومي أو أسبوعي يصل بريدك مباشرة.
+* **إشعارات Telegram (جديد 1.1.0)**: بجانب Slack/Discord، مع زر اختبار لكل قناة وعتبة إشعارات ذكية.
+* **فلترة الروبوتات (جديد 1.1.0)**: لا تتضخم أرقامك بزيارات عناكب الزحف.
+* **تطبيع عربي ذكي (جديد 1.1.0)**: "أحذية / احذيه / أحذيةَ" تُحصى فرصة واحدة.
+* **سجل كامل**: كل عملية بحث مع IP مجهول ونوع الجهاز والتاريخ ونوع الطلب — قابل للبحث والفلترة بالتاريخ.
 * **تصدير CSV**: تصدير كامل أو مفلتر بترميز UTF-8 BOM متوافق مع Excel والعربية.
-* **إشعارات Slack/Discord**: تنبيه فوري عند ظهور فجوات بحث جديدة.
 * **إعدادات مرنة**: الطول الأدنى/الأقصى، مدة الاحتفاظ، استثناء مصطلحات، تتبع المسجلين/الزوار.
 * **تنظيف تلقائي**: مهمة cron يومية تحذف السجلات الأقدم من المدة المحددة.
 * **خصوصية**: إخفاء أجزاء من IP مفعّل افتراضيًا (متوافق مع GDPR).
 * **إجراءات فورية**: حذف مصطلح أو تفريغ الكل عبر AJAX دون إعادة تحميل الصفحة.
+* **WP-CLI و REST (جديد 1.1.0)**: أوامر طرفية ونقاط REST للقراءة فقط للوكيلات والأتمتة.
+* **نسخ الإعدادات (جديد 1.1.0)**: تصدير/استيراد JSON بين المتاجر.
 * **6 ثيمات للوحة التحكم** (Light/Dark/Ocean/Forest/Sunset/Midnight) + دعم White-label كامل.
 * **متعدد اللغات**: جاهز للترجمة (.pot متضمن) ويعمل على شبكات Multi-site.
 
@@ -93,14 +104,28 @@ No. Deactivation only removes scheduled tasks; your data stays intact. Full unin
 
 == Screenshots ==
 
-1. Dashboard — stat cards and daily trend chart (Ocean theme). / لوحة المعلومات — بطاقات إحصائية واتجاه يومي.
-2. Top zero-result search terms + quick actions (Forest theme). / أعلى المصطلحات بلا نتائج + إجراءات سريعة.
-3. Full search logs — successful and zero-result searches together (Sunset theme). / السجل الكامل — البحوث الناجحة والصفرية معًا.
+1. Dashboard — stat cards with previous-period comparison and daily trend chart (Ocean theme). / لوحة المعلومات — بطاقات مع مقارنة الفترة السابقة واتجاه يومي.
+2. Top zero-result search terms + smart-mapping quick actions (Forest theme). / أعلى المصطلحات بلا نتائج + أزرار الربط الذكي.
+3. Full search logs with search & date filters — successful and zero-result searches together (Sunset theme). / السجل الكامل مع البحث والفلترة بالتاريخ.
 4. Full Arabic (RTL) dashboard — bilingual AR/EN. / لوحة كاملة بالعربية (RTL) — ثنائي اللغة.
-5. Settings — tracking toggles, GDPR IP anonymize, retention, term length (Forest theme). / الإعدادات — التتبع والخصوصية والاحتفاظ وحدود الطول.
-6. Settings — Slack/Discord webhooks, theme & language switcher, widget, white-label. / الإعدادات — الإشعارات والثيمات واللغة وWidget وWhite-label.
+5. Settings — tracking toggles, bot filtering, GDPR IP anonymize, retention, term length (Forest theme). / الإعدادات — التتبع وفلترة الروبوتات والخصوصية والاحتفاظ وحدود الطول.
+6. Settings — Slack/Discord/Telegram webhooks with test buttons, notification threshold, email digest, mapping behavior. / الإعدادات — القنوات مع أزرار اختبار والعتبة والتقرير البريدي وسلوك الربط.
+7. Smart Mappings page — term-to-product management with hits counter. / صفحة الربط الذكي — إدارة الربطات مع عداد الاستفادات.
 
 == Changelog ==
+
+= 1.1.0 =
+* New: Smart Mappings — map any zero-result term to a product/category/URL, with three storefront behaviors (none / add-to-results / redirect) and a usage counter. / جديد: الربط الذكي — اربط المصطلح الصفري بمنتج أو تصنيف أو رابط مع ثلاثة سلوكيات وعداد استفادات.
+* New: Scheduled email digest (daily/weekly) with top zero terms, stats and previous-period delta. / جديد: تقرير بريدي دوري يومي/أسبوعي بأعلى المصطلحات والإحصاءات والتغير عن الفترة السابقة.
+* New: Telegram notifications + per-channel test buttons (Slack/Discord/Telegram). / جديد: إشعارات Telegram + زر اختبار لكل قناة.
+* New: Notification threshold — alert only when a term repeats N times within 24 hours. / جديد: عتبة إشعارات — لا تنبيه إلا بعد تكرار المصطلح N مرة خلال 24 ساعة.
+* New: Crawl-bot filtering (on by default, extendable via wzsi_bot_patterns). / جديد: فلترة روبوتات الزحف (مفعلة افتراضياً وقابلة للتوسعة).
+* New: Arabic-aware term normalization — hamza/taa-marbuta/yaa folding + tashkeel removal, with a safe batched data migration. / جديد: تطبيع عربي ذكي للمصطلحات مع ترحيل بيانات دفعات آمن.
+* New: Logs page search box and date/type filters. / جديد: بحث نصي وفلاتر تاريخ ونوع في صفحة السجلات.
+* New: Previous-period comparison line in the trend chart + delta on the failure-rate card. / جديد: خط مقارنة الفترة السابقة في الرسم البياني + تغير معدل الفشل.
+* New: WP-CLI commands (stats/top/logs/clear/prune) and read-only REST endpoints (wzsi/v1). / جديد: أوامر WP-CLI ونقاط REST للقراءة فقط.
+* New: Settings export/import (JSON). / جديد: تصدير واستيراد الإعدادات JSON.
+* Improved: 5-minute dashboard query cache with instant invalidation. / تحسين: كاش 5 دقائق لاستعلامات اللوحة مع إبطال فوري.
 
 = 1.0.1 =
 * Fixed: Slack & Discord webhooks now actually fire (the hook was never triggered). / إصلاح: إشعارات Slack/Discord تعمل الآن فعليًا.
@@ -132,6 +157,9 @@ No. Deactivation only removes scheduled tasks; your data stays intact. Full unin
 * UI language auto-detects the site language on first activation (Arabic/English), with manual override in settings.
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+Feature release: Smart Mappings, email digest, Telegram, bot filtering, Arabic normalization with auto-migration, log filters, chart comparison, WP-CLI/REST. / إصدار مزايا: الربط الذكي، التقرير البريدي، Telegram، فلترة الروبوتات، التطبيع العربي مع ترحيل تلقائي، فلاتر السجلات، مقارنة الرسم البياني، WP-CLI/REST.
 
 = 1.0.1 =
 Bug-fix release: webhooks fixed, local Chart.js, MySQL-safe indexing, multibyte-safe Arabic exclusions, multisite-safe uninstall. / إصدار إصلاحات: الإشعارات، تضمين Chart.js محليًا، توافق MySQL، أمان العربية، حذف آمن للشبكات.

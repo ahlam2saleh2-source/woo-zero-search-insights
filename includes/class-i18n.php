@@ -311,6 +311,146 @@ class WZSI_i18n
                 'ar' => 'اكتشف ما يبحث عنه عملاؤك دون أن يجدوه. تسجّل الإضافة عمليات البحث في WooCommerce التي لا تُرجع نتائج، مع لوحة إحصائيات احترافية وتصدير CSV وميزات تنظيف تلقائي.',
                 'en' => 'Discover what your customers search for but cannot find. Track WooCommerce zero-result searches with professional dashboard, CSV export, and auto-cleanup.'
             ),
+
+            // ═══════════ v1.1.0 ═══════════
+
+            // === F-4: الربط الذكي ===
+            'menu_mappings' => array('ar' => 'الربط الذكي', 'en' => 'Smart Mappings'),
+            'map_page_subtitle' => array(
+                'ar' => 'اربط المصطلحات التي لم يجد لها عملاؤك نتائج بمنتج أو تصنيف موجود — فيظهر للزائر بدل صفحة فارغة.',
+                'en' => 'Map zero-result search terms to an existing product or category — so visitors see results instead of an empty page.'
+            ),
+            'map_page_behavior_hint' => array('ar' => 'سلوك الربط الحالي في واجهة المتجر:', 'en' => 'Current storefront mapping behavior:'),
+            'map_add_heading' => array('ar' => 'الربطات الحالية', 'en' => 'Current mappings'),
+            'map_btn_new' => array('ar' => 'إضافة ربط جديد', 'en' => 'Add new mapping'),
+            'map_empty_title' => array('ar' => 'لا ربطات بعد', 'en' => 'No mappings yet'),
+            'map_empty_desc' => array(
+                'ar' => 'افتح لوحة المعلومات واضغط زر "ربط" بجانب أي مصطلح بلا نتائج، أو أضف ربطاً جديداً من هنا.',
+                'en' => 'Open the dashboard and click "Map" next to any zero-result term, or add a new mapping here.'
+            ),
+            'map_modal_title' => array('ar' => 'ربط المصطلح بهدف', 'en' => 'Map term to a target'),
+            'map_modal_desc' => array(
+                'ar' => 'عندما يبحث زائر عن هذا المصطلح ولم يجد نتائج، سيظهر له هدف الربط حسب سلوك الربط المختار.',
+                'en' => 'When a visitor searches this term with no results, the mapping target will be shown per the chosen behavior.'
+            ),
+            'map_term_label' => array('ar' => 'مصطلح البحث', 'en' => 'Search term'),
+            'map_target_type' => array('ar' => 'نوع الهدف', 'en' => 'Target type'),
+            'map_type_product' => array('ar' => 'منتج', 'en' => 'Product'),
+            'map_type_category' => array('ar' => 'تصنيف منتجات', 'en' => 'Product category'),
+            'map_type_url' => array('ar' => 'رابط خارجي', 'en' => 'External URL'),
+            'map_search_label' => array('ar' => 'ابحث واختر المنتج/التصنيف', 'en' => 'Search & pick product/category'),
+            'map_search_placeholder' => array('ar' => 'اكتب حرفين على الأقل…', 'en' => 'Type at least 2 characters…'),
+            'map_url_label' => array('ar' => 'الرابط', 'en' => 'URL'),
+            'map_btn_save' => array('ar' => 'حفظ الربط', 'en' => 'Save mapping'),
+            'map_btn_cancel' => array('ar' => 'إلغاء', 'en' => 'Cancel'),
+            'map_btn_link' => array('ar' => 'ربط', 'en' => 'Map'),
+            'map_btn_activate' => array('ar' => 'تفعيل', 'en' => 'Activate'),
+            'map_btn_pause' => array('ar' => 'إيقاف', 'en' => 'Pause'),
+            'map_col_target' => array('ar' => 'الهدف', 'en' => 'Target'),
+            'map_col_type' => array('ar' => 'النوع', 'en' => 'Type'),
+            'map_col_hits' => array('ar' => 'استفادات', 'en' => 'Uses'),
+            'map_col_status' => array('ar' => 'الحالة', 'en' => 'Status'),
+            'status_active' => array('ar' => 'مفعّل', 'en' => 'Active'),
+            'status_inactive' => array('ar' => 'موقوف', 'en' => 'Paused'),
+            'map_saved' => array('ar' => 'تم حفظ الربط — سيعمل للزوار حسب سلوك الربط', 'en' => 'Mapping saved — it will apply to visitors per the mapping behavior'),
+            'map_failed' => array('ar' => 'فشل حفظ الربط', 'en' => 'Failed to save mapping'),
+            'map_error_term' => array('ar' => 'اكتب مصطلح البحث أولاً', 'en' => 'Enter the search term first'),
+            'map_error_target' => array('ar' => 'اختر منتجاً أو تصنيفاً من نتائج البحث', 'en' => 'Pick a product or category from the results'),
+            'map_error_url' => array('ar' => 'أدخل الرابط أولاً', 'en' => 'Enter the URL first'),
+            'field_mapping_behavior' => array('ar' => 'سلوك الربط في واجهة المتجر', 'en' => 'Storefront mapping behavior'),
+            'map_behavior_none' => array('ar' => 'بدون تغيير (الافتراضي — آمن)', 'en' => 'No change (default — safe)'),
+            'map_behavior_add_result' => array('ar' => 'إضافة المنتج للنتائج عند الصفرية', 'en' => 'Add mapped product to empty results'),
+            'map_behavior_redirect' => array('ar' => 'تحويل الزائر للهدف مباشرة (302)', 'en' => 'Redirect visitor to the target (302)'),
+            'section_mapping' => array('ar' => 'الربط الذكي (مصطلح ← منتج)', 'en' => 'Smart Mappings (term → product)'),
+            'desc_mapping_behavior' => array(
+                'ar' => 'حوّل المصطلحات الصفرية إلى نتائج: اربط المصطلح بمنتج أو تصنيف من صفحة "الربط الذكي" ثم اختر سلوكه في المتجر. الافتراضي بلا أي تغيير على نتائج البحث.',
+                'en' => 'Turn zero terms into results: map a term to a product/category from the Smart Mappings page, then choose its storefront behavior. Default changes nothing.'
+            ),
+            'desc_mapping_options' => array(
+                'ar' => 'يؤثر فقط على البحوث الصفرية في نطاق المنتجات، ويزيد عداد الاستفادات عند كل استفادة فعلية.',
+                'en' => 'Affects only zero-result product searches, and counts a "use" every time it actually helps.'
+            ),
+
+            // === F-3: التقرير البريدي ===
+            'section_digest' => array('ar' => 'التقرير البريدي الدوري', 'en' => 'Scheduled Email Digest'),
+            'desc_digest' => array(
+                'ar' => 'ملخص يصل بريدك بالأرقام وأعلى المصطلحات الصفرية دون فتح لوحة التحكم. يعتمد على نبضة WP-Cron اليومية — للاستضافات الجادة فعّل cron حقيقياً.',
+                'en' => 'A summary straight to your inbox with stats and top zero terms — no dashboard visits needed. Runs on a daily WP-Cron tick; enable a real cron on serious hosts.'
+            ),
+            'field_digest_enabled' => array('ar' => 'تفعيل التقرير البريدي', 'en' => 'Enable email digest'),
+            'field_digest_frequency' => array('ar' => 'تردد التقرير', 'en' => 'Digest frequency'),
+            'field_digest_email' => array('ar' => 'بريد استلام التقرير', 'en' => 'Digest recipient email'),
+            'digest_weekly' => array('ar' => 'أسبوعي (آخر 7 أيام)', 'en' => 'Weekly (last 7 days)'),
+            'digest_daily' => array('ar' => 'يومي (آخر 24 ساعة)', 'en' => 'Daily (last 24 hours)'),
+            'digest_send_test' => array('ar' => 'إرسال تقرير تجريبي الآن', 'en' => 'Send a test digest now'),
+            'digest_test_ok' => array('ar' => 'أُرسل التقرير التجريبي — افحص صندوق البريد (ومجلد Spam)', 'en' => 'Test digest sent — check the inbox (and Spam folder)'),
+            'digest_test_fail' => array('ar' => 'فشل إرسال التقرير — تحقق من البريد المدخل وإعدادات بريد الموقع', 'en' => 'Digest failed — check the entered email and the site mail settings'),
+            'digest_invalid_email' => array('ar' => 'بريد غير صالح — أضف بريد التقرير في الإعدادات أولاً', 'en' => 'Invalid email — set the digest recipient in settings first'),
+            'digest_sent_ok' => array('ar' => 'أُرسل التقرير إلى %s', 'en' => 'Digest sent to %s'),
+            'digest_sent_fail' => array('ar' => 'فشل الإرسال — تحقق من إعدادات بريد الموقع', 'en' => 'Sending failed — check the site mail settings'),
+            'digest_subject' => array('ar' => 'تقرير البحث الصفري', 'en' => 'Zero-Search Report'),
+            'digest_title' => array('ar' => 'تقرير البحث الصفري', 'en' => 'Zero-Search Report'),
+            'digest_hello' => array('ar' => 'مرحباً،', 'en' => 'Hello,'),
+            'digest_last_24h' => array('ar' => 'إحصاءات آخر 24 ساعة في متجرك:', 'en' => 'Last 24 hours in your store:'),
+            'digest_last_7d' => array('ar' => 'إحصاءات آخر 7 أيام في متجرك:', 'en' => 'Last 7 days in your store:'),
+            'digest_top_heading' => array('ar' => 'أعلى 10 مصطلحات بلا نتائج', 'en' => 'Top 10 zero-result terms'),
+            'digest_delta_vs_prev' => array('ar' => 'مقارنة بالفترة السابقة', 'en' => 'vs previous period'),
+            'digest_no_terms' => array('ar' => 'لا مصطلحات صفرية في هذه الفترة — عملاؤك يجدون ما يبحثون عنه!', 'en' => 'No zero-result terms this period — your customers are finding what they need!'),
+            'digest_cta' => array('ar' => 'افتح لوحة المعلومات', 'en' => 'Open dashboard'),
+            'digest_footer' => array('ar' => 'أُرسل بواسطة Woo Zero Search Insights v%s', 'en' => 'Sent by Woo Zero Search Insights v%s'),
+
+            // === F-7: عتبة الإشعارات + Telegram ===
+            'field_notify_min' => array('ar' => 'عتبة الإشعار (تكرارات المصطلح خلال 24 ساعة)', 'en' => 'Notification threshold (term repeats in 24h)'),
+            'field_telegram_token' => array('ar' => 'Telegram Bot Token', 'en' => 'Telegram Bot Token'),
+            'field_telegram_chat' => array('ar' => 'Telegram Chat ID', 'en' => 'Telegram Chat ID'),
+            'desc_test_buttons' => array(
+                'ar' => 'زر التجربة يرسل رسالة فعلية للقناة ويعرض نجاح/فشل الاستجابة — أسرع طريقة للتحقق من الروابط والتوكنات.',
+                'en' => 'The test button sends a real message and reports success/failure — the fastest way to verify URLs and tokens.'
+            ),
+            'btn_test' => array('ar' => 'اختبار القنوات', 'en' => 'Channel tests'),
+            'msg_test_ok' => array('ar' => 'تم الإرسال بنجاح — افحص القناة', 'en' => 'Sent successfully — check the channel'),
+            'msg_test_fail' => array('ar' => 'فشل الإرسال — تحقق من الرابط/التوكن واتصال الموقع بالخارج', 'en' => 'Send failed — check the URL/token and the site outbound connection'),
+            'msg_test_no_url' => array('ar' => 'أدخل رابط/توكن القناة واحفظ الإعدادات أولاً', 'en' => 'Enter the channel URL/token and save settings first'),
+            'webhook_test_term' => array(
+                'ar' => 'رسالة اختبار من Woo Zero Search Insights — إن وصلتك فهذا يعني أن الإعداد سليم',
+                'en' => 'Test message from Woo Zero Search Insights — receiving this means your setup works'
+            ),
+
+            // === F-1: الروبوتات ===
+            'field_exclude_bots' => array('ar' => 'استثناء روبوتات الزحف من التتبع', 'en' => 'Exclude crawl bots from tracking'),
+            'desc_exclude_bots' => array(
+                'ar' => 'يفلتر User-Agent المعروفة (Googlebot، Ahrefs، curl…) حتى تعكس أرقامك بشراً حقيقياً. قابلة للتوسعة عبر فلتر wzsi_bot_patterns.',
+                'en' => 'Filters known bot user agents (Googlebot, Ahrefs, curl…) so your numbers reflect real humans. Extendable via the wzsi_bot_patterns filter.'
+            ),
+
+            // === F-5: فلاتر السجلات ===
+            'filter_search' => array('ar' => 'بحث في المصطلحات…', 'en' => 'Search terms…'),
+            'filter_from' => array('ar' => 'من', 'en' => 'From'),
+            'filter_to' => array('ar' => 'إلى', 'en' => 'To'),
+            'filter_all_types' => array('ar' => 'كل الأنواع', 'en' => 'All types'),
+            'filter_apply' => array('ar' => 'تطبيق', 'en' => 'Apply'),
+            'filter_reset' => array('ar' => 'مسح الفلاتر', 'en' => 'Reset filters'),
+
+            // === F-6: المقارنة ===
+            'stat_vs_previous' => array('ar' => 'مقارنة بالفترة السابقة', 'en' => 'vs previous period'),
+            'chart_previous_period' => array('ar' => 'الفترة السابقة', 'en' => 'Previous period'),
+
+            // === TD-2: نسخ الإعدادات ===
+            'section_backup' => array('ar' => 'نسخ الإعدادات', 'en' => 'Settings backup'),
+            'desc_backup' => array(
+                'ar' => 'نزّل إعداداتك ملف JSON وأعد استيرادها على متجر آخر — مفيد للوكيلات التي تدير عدة متاجر بنفس الإعداد.',
+                'en' => 'Download your settings as JSON and import them on another store — handy for agencies managing multiple stores.'
+            ),
+            'btn_export_settings' => array('ar' => 'تصدير الإعدادات (JSON)', 'en' => 'Export settings (JSON)'),
+            'btn_import_settings' => array('ar' => 'استيراد الإعدادات', 'en' => 'Import settings'),
+            'msg_import_ok' => array('ar' => 'تم استيراد الإعدادات بنجاح', 'en' => 'Settings imported successfully'),
+            'msg_import_bad' => array('ar' => 'ملف غير صالح — ارفع ملف JSON مُصدَّراً من هذه الإضافة', 'en' => 'Invalid file — upload a JSON exported from this plugin'),
+
+            // === فحص الصحة ===
+            'hc_migration' => array('ar' => 'ترحيل التطبيع العربي (v1.1.0)', 'en' => 'Arabic normalization migration (v1.1.0)'),
+            'hc_migration_done' => array('ar' => 'مكتمل', 'en' => 'Complete'),
+            'hc_migration_pending' => array('ar' => 'قيد التنفيذ — متبقي %s سجلاً (يكمل تلقائياً)', 'en' => 'In progress — %s rows remaining (auto-completes)'),
+            'hc_maps_table' => array('ar' => 'جدول الربط الذكي (سجلات)', 'en' => 'Smart mappings table (rows)'),
         );
     }
 

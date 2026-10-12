@@ -1,0 +1,87 @@
+════════════════════════════════════════════════════════════
+ Woo Zero Search Insights — CHANGELOG v1.1.0
+ سجل التغييرات
+════════════════════════════════════════════════════════════
+
+Release date / تاريخ الإصدار: 2026-10-12
+
+── NEW / جديد ──────────────────────────────────────────────
+
+* Smart Mappings — الربط الذكي:
+  Map any zero-result search term to a product, category or
+  external URL. Three storefront behaviors (none / add to
+  results / redirect) with a usage counter per mapping.
+  اربط أي مصطلح بلا نتائج بمنتج أو تصنيف أو رابط خارجي، مع
+  ثلاثة سلوكيات في المتجر وعدّاد استفادات لكل ربط.
+
+* Scheduled Email Digest — التقرير البريدي الدوري:
+  Daily or weekly HTML summary (auto-RTL for Arabic) with
+  period stats, top 10 zero terms and previous-period delta.
+  Plus a "send test now" button.
+  ملخص يومي/أسبوعي بتنسيق RTL تلقائي مع زر إرسال تجريبي فوري.
+
+* Telegram notifications + notification threshold —
+  إشعارات Telegram + عتبة الإشعارات:
+  New Telegram channel alongside Slack/Discord, per-channel
+  test buttons, and a threshold: alert only when a term
+  repeats N times within 24 hours (default 1 = old behavior).
+  قناة Telegram الجديدة، زر اختبار لكل قناة، ولا تنبيه إلا
+  بعد تكرار المصطلح N مرة خلال 24 ساعة.
+
+* Crawl-bot filtering — فلترة روبوتات الزحف:
+  Known bots (Googlebot, Ahrefs, curl, monitoring tools...)
+  are no longer counted as real searches. On by default,
+  extendable via the wzsi_bot_patterns filter.
+  الروبوتات المعروفة لا تُحصى بعد، مفعّلة افتراضياً وقابلة
+  للتوسعة عبر فلتر wzsi_bot_patterns.
+
+* Arabic-aware term normalization — تطبيع عربي أعمق:
+  Hamza forms, taa marbuta, yaa/alif maqsura and diacritics
+  are folded automatically, so "أحذية / احذيه / أحذيةَ" group
+  as ONE opportunity. Old records migrate in safe batches.
+  توحيد تلقائي للهمزات والتاء المربوطة والتشكيل مع ترحيل
+  آمن دفعات للسجلات القديمة.
+
+* Log search & date filters — فلاتر السجلات:
+  Text search, from/to dates and request-type filters on the
+  logs page, preserved across pagination. Injection-safe.
+  بحث نصي وفلترة بالتاريخ والنوع في السجلات مع حماية كاملة.
+
+* Previous-period comparison — مقارنة الفترة السابقة:
+  A dashed line for the previous period in the trend chart
+  and a colored delta badge on the failure-rate card.
+  خط متقطع للفترة السابقة في الرسم البياني وسهم تغيّر ملوّن.
+
+* WP-CLI & REST — أوامر طرفية وواجهة REST:
+  wp wzsi stats|top|logs|clear|prune plus read-only REST
+  endpoints (wzsi/v1) behind standard WordPress auth, with
+  zero personal data in responses.
+  أوامر طرفية ونقاط REST للقراءة فقط بمصادقة قياسية وبلا
+  أي بيانات شخصية.
+
+* Settings backup — نسخ الإعدادات:
+  Export/import all settings as JSON — perfect for agencies
+  managing many stores.
+  تصدير/استيراد الإعدادات JSON — مثالي للوكيلات.
+
+── IMPROVED / تحسينات ──────────────────────────────────────
+
+* Dashboard query cache (5-minute transients, version-keyed,
+  instant invalidation on any write) for high-traffic stores.
+  كاش 5 دقائق لاستعلامات اللوحة بمفتاح إصدار مع إبطال فوري.
+
+* WordPress personal-data exporter/eraser registration (GDPR).
+  تسجيل مصدّر/ممحى البيانات الشخصية في ووردبريس.
+
+* Tested up to WordPress 7.1 / WooCommerce 11.2.
+  مُختبَرة حتى ووردبريس 7.1 وووكومرس 11.2.
+
+── UPGRADE NOTE / ملاحظة الترقية ───────────────────────────
+
+Upgrading from 1.0.x is a direct overwrite: the new mappings
+table is created automatically and your old terms are
+re-normalized in small batches (progress visible on the
+Health Check page). No data is deleted. Deactivation still
+keeps your data; full uninstall removes everything.
+الترقية من 1.0.x مباشرة: يُنشأ جدول الربط تلقائياً وتُعاد
+تطبيع السجلات القديمة دفعات آمنة — لا يُحذف أي شيء.

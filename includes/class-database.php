@@ -58,6 +58,23 @@ class WZSI_Database
 
         dbDelta($sql);
 
+        // F-4: جدول الربط الذكي (مصطلح صفري ← منتج/تصنيف/رابط) — منفصل عن جدول السجلات
+        $maps_table = self::maps_table_name();
+        $sql_maps = "CREATE TABLE {$maps_table} (
+            id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            term_normalized VARCHAR(255) NOT NULL,
+            target_type VARCHAR(20) NOT NULL DEFAULT 'product',
+            target_id BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
+            target_url VARCHAR(500) DEFAULT NULL,
+            hits INT(11) NOT NULL DEFAULT 0,
+            active TINYINT(1) NOT NULL DEFAULT 1,
+            created_at DATETIME NOT NULL,
+            created_by BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
+            PRIMARY KEY  (id),
+            UNIQUE KEY idx_map_term (term_normalized)
+        ) {$charset_collate};";
+        dbDelta($sql_maps);
+
         // الإصلاح: كان "CREATE INDEX IF NOT EXISTS" صيغة MariaDB فقط وتسبب خطأ DB صامت على MySQL.
         // الآن نفحص وجود الفهرس أولاً بطريقة متوافقة مع MySQL وMariaDB معًا.
         $indexes = $wpdb->get_results("SHOW INDEX FROM {$table_name}");
@@ -71,6 +88,17 @@ class WZSI_Database
         if (!$idx_exists) {
             $wpdb->query("CREATE INDEX idx_term_at ON {$table_name} (search_term_normalized, searched_at)");
         }
+    }
+
+    /**
+     * اسم جدول الربط الذكي (مع prefix)
+     *
+     * @return string
+     */
+    public static function maps_table_name()
+    {
+        global $wpdb;
+        return $wpdb->prefix . 'woo_zero_search_maps';
     }
 
     /**
@@ -131,6 +159,9 @@ class WZSI_Database
             ),
             array('%s', '%s', '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%d', '%s')
         );
+
+        // TD-1: إبطال كاش اللوحة عند أي كتابة
+        self::flush_cache();
 
         return $inserted ? (int) $wpdb->insert_id : false;
     }
@@ -196,6 +227,8 @@ class WZSI_Database
 
     /**
      * تطبيع مصطلح البحث (للتجميع)
+     * F-2: توحيد عربي ذكي — إزالة التشكيل والتطويل وتوحيد الهمزات/التاء المربوطة/الياء
+     * حتى تجتمع "أحذية / احذيه / أحذيةَ" كفرصة واحدة دون تغيير النص الأصلي المعروض
      *
      * @param string $term
      * @return string
@@ -204,6 +237,23 @@ class WZSI_Database
     {
         $term = mb_strtolower(trim($term), 'UTF-8');
         $term = preg_replace('/\s+/', ' ', $term);
+
+        // نطبق التوحيد العربي فقط عند وجود حروف عربية (الإنجليزية كما هي)
+        if (preg_match('/[\x{0600}-\x{06FF}]/u', $term)) {
+            // إزالة التشكيل (الفتحة/الضمة/الكسرة/السكون/التنوين/المدّ) والتطويل
+            $term = preg_replace('/[\x{064B}-\x{0652}\x{0670}\x{0640}]/u', '', $term);
+            // توحيد الحروف المتشابهة كتابةً واختلف استخداماً
+            $term = strtr($term, array(
+                'أ' => 'ا',
+                'إ' => 'ا',
+                'آ' => 'ا',
+                'ٱ' => 'ا',
+                'ى' => 'ي',
+                'ة' => 'ه',
+                'ؤ' => 'و',
+                'ئ' => 'ي',
+            ));
+        }
         return $term;
     }
 
@@ -219,12 +269,19 @@ class WZSI_Database
         global $wpdb;
         $table_name = self::table_name();
 
+        // TD-1: كاش 5 دقائق يُبطَل عند أي كتابة
+        $cache_key = self::cache_key('top_' . (int) $limit . '_' . (int) $days);
+        $cached = get_transient($cache_key);
+        if (false !== $cached) {
+            return $cached;
+        }
+
         $where = "WHERE results_count = 0";
         if ($days > 0) {
             $where .= $wpdb->prepare(" AND searched_at > DATE_SUB(NOW(), INTERVAL %d DAY)", $days);
         }
 
-        return $wpdb->get_results(
+        $results = $wpdb->get_results(
             "SELECT
                 search_term,
                 search_term_normalized,
@@ -238,6 +295,9 @@ class WZSI_Database
              ORDER BY total_searches DESC, unique_searches DESC
              LIMIT " . (int) $limit
         );
+
+        set_transient($cache_key, $results, 5 * MINUTE_IN_SECONDS);
+        return $results;
     }
 
     /**
@@ -250,6 +310,13 @@ class WZSI_Database
     {
         global $wpdb;
         $table_name = self::table_name();
+
+        // TD-1: كاش 5 دقائق يُبطَل عند أي كتابة
+        $cache_key = self::cache_key('stats_' . (int) $days);
+        $cached = get_transient($cache_key);
+        if (false !== $cached) {
+            return $cached;
+        }
 
         $where = "WHERE 1=1";
         if ($days > 0) {
@@ -268,7 +335,7 @@ class WZSI_Database
              {$where}"
         );
 
-        return array(
+        $result = array(
             'total_searches'      => (int) ($stats->total_searches ?? 0),
             'total_with_repeats'  => (int) ($stats->total_with_repeats ?? 0),
             'zero_results'         => (int) ($stats->zero_results ?? 0),
@@ -278,6 +345,133 @@ class WZSI_Database
             'zero_rate'            => ($stats->total_searches > 0)
                 ? round(($stats->zero_results / $stats->total_searches) * 100, 1)
                 : 0,
+        );
+
+        set_transient($cache_key, $result, 5 * MINUTE_IN_SECONDS);
+        return $result;
+    }
+
+    /**
+     * F-6: إحصاءات الفترة الحالية مقابل الفترة السابقة (نفس الطول)
+     *
+     * @param int $days
+     * @return array
+     */
+    public static function get_compare_stats($days = 30)
+    {
+        global $wpdb;
+        $table_name = self::table_name();
+        $days = max(1, (int) $days);
+
+        $cache_key = self::cache_key('cmp_' . $days);
+        $cached = get_transient($cache_key);
+        if (false !== $cached) {
+            return $cached;
+        }
+
+        $cur = $wpdb->get_row($wpdb->prepare(
+            "SELECT COUNT(*) AS total, SUM(CASE WHEN results_count = 0 THEN 1 ELSE 0 END) AS zero
+             FROM {$table_name}
+             WHERE searched_at > DATE_SUB(NOW(), INTERVAL %d DAY)",
+            $days
+        ));
+
+        $prev = $wpdb->get_row($wpdb->prepare(
+            "SELECT COUNT(*) AS total, SUM(CASE WHEN results_count = 0 THEN 1 ELSE 0 END) AS zero
+             FROM {$table_name}
+             WHERE searched_at > DATE_SUB(NOW(), INTERVAL %d DAY)
+               AND searched_at <= DATE_SUB(NOW(), INTERVAL %d DAY)",
+            $days * 2, $days
+        ));
+
+        $rate = static function ($r) {
+            if (!$r || (int) $r->total === 0) {
+                return null;
+            }
+            return round(((int) $r->zero / (int) $r->total) * 100, 1);
+        };
+
+        $result = array(
+            'current_total'  => (int) ($cur->total ?? 0),
+            'previous_total' => (int) ($prev->total ?? 0),
+            'current_zero'   => (int) ($cur->zero ?? 0),
+            'previous_zero'  => (int) ($prev->zero ?? 0),
+            'current_rate'   => $rate($cur),
+            'previous_rate'  => $rate($prev),
+        );
+
+        set_transient($cache_key, $result, 5 * MINUTE_IN_SECONDS);
+        return $result;
+    }
+
+    /**
+     * F-7: مجموع مرات بحث مصطلح معين خلال آخر 24 ساعة (عتبة الإشعارات)
+     *
+     * @param string $normalized المصطلح المطبعّن
+     * @return int
+     */
+    public static function get_term_occurrences_24h($normalized)
+    {
+        global $wpdb;
+        $table_name = self::table_name();
+        return (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT SUM(occurrence_count) FROM {$table_name}
+             WHERE search_term_normalized = %s
+               AND searched_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)",
+            $normalized
+        ));
+    }
+
+    /**
+     * F-5: جلب السجلات مع فلاتر (بحث نصي، صفرية، تاريخ من/إلى، نوع) + ترقيم
+     *
+     * @param array $args q|zero_only|from|to (DateTime)|type|page|per_page
+     * @return array rows|total|page|per_page|pages
+     */
+    public static function get_logs_filtered($args = array())
+    {
+        global $wpdb;
+        $table_name = self::table_name();
+
+        $where  = "WHERE 1=1";
+        $params = array();
+
+        if (!empty($args['zero_only'])) {
+            $where .= " AND results_count = 0";
+        }
+        if (!empty($args['q'])) {
+            $where .= " AND search_term_normalized LIKE %s";
+            $params[] = '%' . $wpdb->esc_like(self::normalize_term((string) $args['q'])) . '%';
+        }
+        if (!empty($args['from']) && $args['from'] instanceof DateTime) {
+            $where .= " AND searched_at >= %s";
+            $params[] = $args['from']->format('Y-m-d 00:00:00');
+        }
+        if (!empty($args['to']) && $args['to'] instanceof DateTime) {
+            $where .= " AND searched_at <= %s";
+            $params[] = $args['to']->format('Y-m-d 23:59:59');
+        }
+        if (isset($args['type']) && null !== $args['type'] && 'any' !== $args['type']) {
+            $where .= " AND is_ajax = %d";
+            $params[] = (int) $args['type'];
+        }
+
+        $per_page = max(1, (int) ($args['per_page'] ?? 50));
+        $page     = max(1, (int) ($args['page'] ?? 1));
+        $offset   = ($page - 1) * $per_page;
+
+        $count_sql = "SELECT COUNT(*) FROM {$table_name} {$where}";
+        $total = (int) (empty($params) ? $wpdb->get_var($count_sql) : $wpdb->get_var($wpdb->prepare($count_sql, $params)));
+
+        $rows_sql = "SELECT * FROM {$table_name} {$where} ORDER BY searched_at DESC LIMIT %d OFFSET %d";
+        $rows = $wpdb->get_results($wpdb->prepare($rows_sql, array_merge($params, array($per_page, $offset))));
+
+        return array(
+            'rows'     => $rows,
+            'total'    => $total,
+            'page'     => $page,
+            'per_page' => $per_page,
+            'pages'    => (int) ceil($total / $per_page),
         );
     }
 
@@ -307,15 +501,26 @@ class WZSI_Database
     /**
      * اتجاه يومي (للرسم البياني)
      *
-     * @param int $days
-     * @return array
+     * F-6: عند $compare = true يعيد مصفوفتين (current + previous) بنفس طول الفترة
+     *
+     * @param int  $days
+     * @param bool $compare هل نُرجع الفترة السابقة أيضًا؟
+     * @return array|object[]
      */
-    public static function get_daily_trend($days = 30)
+    public static function get_daily_trend($days = 30, $compare = false)
     {
         global $wpdb;
         $table_name = self::table_name();
+        $days = max(1, (int) $days);
 
-        return $wpdb->get_results($wpdb->prepare(
+        // TD-1: كاش 5 دقائق يُبطَل عند أي كتابة
+        $cache_key = self::cache_key('trend_' . $days . '_' . ($compare ? '1' : '0'));
+        $cached = get_transient($cache_key);
+        if (false !== $cached) {
+            return $cached;
+        }
+
+        $current = $wpdb->get_results($wpdb->prepare(
             "SELECT
                 DATE(searched_at) AS day,
                 COUNT(*) AS total,
@@ -326,6 +531,28 @@ class WZSI_Database
              ORDER BY day ASC",
             $days
         ));
+
+        if (!$compare) {
+            set_transient($cache_key, $current, 5 * MINUTE_IN_SECONDS);
+            return $current;
+        }
+
+        $previous = $wpdb->get_results($wpdb->prepare(
+            "SELECT
+                DATE(searched_at) AS day,
+                COUNT(*) AS total,
+                SUM(CASE WHEN results_count = 0 THEN 1 ELSE 0 END) AS zero_count
+             FROM {$table_name}
+             WHERE searched_at > DATE_SUB(NOW(), INTERVAL %d DAY)
+               AND searched_at <= DATE_SUB(NOW(), INTERVAL %d DAY)
+             GROUP BY DATE(searched_at)
+             ORDER BY day ASC",
+            $days * 2, $days
+        ));
+
+        $result = array('current' => $current, 'previous' => $previous);
+        set_transient($cache_key, $result, 5 * MINUTE_IN_SECONDS);
+        return $result;
     }
 
     /**
@@ -345,6 +572,8 @@ class WZSI_Database
             (int) $days
         ));
 
+        self::flush_cache();
+
         return $deleted !== false ? (int) $deleted : 0;
     }
 
@@ -357,7 +586,9 @@ class WZSI_Database
     {
         global $wpdb;
         $table_name = self::table_name();
-        return $wpdb->query("TRUNCATE TABLE {$table_name}") !== false;
+        $result = $wpdb->query("TRUNCATE TABLE {$table_name}") !== false;
+        self::flush_cache();
+        return $result;
     }
 
     /**
@@ -370,10 +601,127 @@ class WZSI_Database
     {
         global $wpdb;
         $table_name = self::table_name();
-        return (int) $wpdb->query($wpdb->prepare(
+        $deleted = (int) $wpdb->query($wpdb->prepare(
             "DELETE FROM {$table_name} WHERE search_term_normalized = %s",
             $normalized_term
         ));
+        self::flush_cache();
+        return $deleted;
+    }
+
+    /**
+     * TD-1: مفتاح إصدار الكاش — الإبطال برفع الإصدار (لا SQL خام)
+     * الحذف المباشر من جدول options يتجاوز كاش الذاكرة لوردبريس داخل نفس العملية
+     * فيعود الصف القديم — رفع الإصدار يجعل المفاتيح القديمة غير مقروءة نهائياً
+     * وتنتهي صلاحيتها طبيعياً بعد 5 دقائق
+     */
+    public static function cache_ver()
+    {
+        return max(1, (int) get_option('wzsi_cache_ver', 1));
+    }
+
+    public static function flush_cache()
+    {
+        update_option('wzsi_cache_ver', self::cache_ver() + 1, false);
+    }
+
+    private static function cache_key($name)
+    {
+        return 'wzsi_cache_v' . self::cache_ver() . '_' . $name;
+    }
+
+    /**
+     * F-2: بدء/متابعة ترحيل التطبيع العربي — دفعات صغيرة مع قفل منع التزامن
+     * يُستدعى من admin_init عند دخول الأدمين ومن النبضة اليومية wzsi_daily_tick
+     *
+     * @return array
+     */
+    public static function maybe_migrate_normalized_terms()
+    {
+        if (get_option('wzsi_norm_migration_done')) {
+            return array('done' => true);
+        }
+
+        // قفل منع تزامن دورتين معًا
+        if (get_transient('wzsi_norm_migrating')) {
+            return array('done' => false, 'locked' => true);
+        }
+        set_transient('wzsi_norm_migrating', 1, 2 * MINUTE_IN_SECONDS);
+
+        $result = self::migrate_normalized_terms(2000);
+
+        delete_transient('wzsi_norm_migrating');
+        return $result;
+    }
+
+    /**
+     * F-2: إعادة تطبيع دفعة من السجلات القديمة من النص الأصلي
+     * (search_term يحفظ النص كما كتبه الزائر بما فيه التشكيل — نعيد التطبيع منه)
+     *
+     * @param int $batch_size
+     * @return array
+     */
+    public static function migrate_normalized_terms($batch_size = 2000)
+    {
+        global $wpdb;
+        $table = self::table_name();
+        $cursor = (int) get_option('wzsi_norm_migration_cursor', 0);
+
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT id, search_term FROM {$table} WHERE id > %d ORDER BY id ASC LIMIT %d",
+            $cursor, (int) $batch_size
+        ));
+
+        if (empty($rows)) {
+            update_option('wzsi_norm_migration_done', 1, false);
+            delete_option('wzsi_norm_migration_cursor');
+            self::flush_cache();
+            return array('done' => true);
+        }
+
+        foreach ($rows as $row) {
+            $new_norm = self::normalize_term((string) $row->search_term);
+            $wpdb->update(
+                $table,
+                array('search_term_normalized' => $new_norm),
+                array('id' => (int) $row->id),
+                array('%s'),
+                array('%d')
+            );
+            $cursor = (int) $row->id;
+        }
+        update_option('wzsi_norm_migration_cursor', $cursor, false);
+
+        $remaining = (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$table} WHERE id > %d", $cursor));
+
+        if ($remaining === 0) {
+            update_option('wzsi_norm_migration_done', 1, false);
+            delete_option('wzsi_norm_migration_cursor');
+            self::flush_cache();
+        }
+
+        return array(
+            'done'      => ($remaining === 0),
+            'processed' => count($rows),
+            'remaining' => $remaining,
+        );
+    }
+
+    /**
+     * F-2: حالة الترحيل (تُعرض في فحص الصحة)
+     *
+     * @return array
+     */
+    public static function migration_status()
+    {
+        if (get_option('wzsi_norm_migration_done')) {
+            return array('done' => true, 'remaining' => 0);
+        }
+        global $wpdb;
+        $table = self::table_name();
+        $cursor = (int) get_option('wzsi_norm_migration_cursor', 0);
+        $remaining = (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$table} WHERE id > %d", $cursor));
+        return array('done' => false, 'remaining' => $remaining);
     }
 
     /**
@@ -384,5 +732,6 @@ class WZSI_Database
         global $wpdb;
         $table_name = self::table_name();
         $wpdb->query("DROP TABLE IF EXISTS {$table_name}");
+        $wpdb->query("DROP TABLE IF EXISTS " . self::maps_table_name());
     }
 }
