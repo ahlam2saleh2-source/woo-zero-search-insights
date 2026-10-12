@@ -63,12 +63,35 @@ class WZSI_Privacy
         if ($user) {
             $table = WZSI_Database::table_name();
             $offset = ((int) $page - 1) * $per_page;
-
             $rows = $wpdb->get_results($wpdb->prepare(
                 "SELECT id, search_term, results_count, searched_at, is_ajax, occurrence_count
                  FROM {$table} WHERE user_id = %d ORDER BY id ASC LIMIT %d OFFSET %d",
                 $user->ID, $per_page, $offset
             ));
+
+            // F-9 (v1.2.0): إشعارات المستخدم تُصدَّر أيضاً
+            $n_table = WZSI_Notify::table_name();
+            $notifs = $wpdb->get_results($wpdb->prepare(
+                "SELECT id, term, channel, status, created_at
+                 FROM {$n_table} WHERE user_id = %d ORDER BY id ASC LIMIT %d OFFSET %d",
+                $user->ID, $per_page, $offset
+            ));
+
+            if (!empty($notifs)) {
+                $ndata = array();
+                foreach ($notifs as $n) {
+                    $ndata[] = array(
+                        'name'  => wzsi_t('hc_notifs_title'),
+                        'value' => $n->term . ' (' . $n->channel . ', ' . $n->status . ', ' . $n->created_at . ')',
+                    );
+                }
+                $export_items[] = array(
+                    'group_id'    => 'wzsi_notifications',
+                    'group_label' => 'Woo Zero Search Insights',
+                    'item_id'     => 'wzsi-notifs-user-' . $user->ID . '-page-' . (int) $page,
+                    'data'        => $ndata,
+                );
+            }
 
             if (!empty($rows)) {
                 $data = array();
@@ -87,7 +110,7 @@ class WZSI_Privacy
             }
         }
 
-        $done = count($export_items) === 0 || count($rows ?? array()) < $per_page;
+        $done = count($export_items) === 0 || (count($rows ?? array()) < $per_page && count($notifs ?? array()) < $per_page);
         return array(
             'data' => $export_items,
             'done' => $done,
@@ -112,6 +135,17 @@ class WZSI_Privacy
                 $user->ID
             ));
             $items_removed = ($affected > 0);
+
+            // F-9 (v1.2.0): محو صندوق إشعارات المتجر + صفوف سجل الإشعارات للهوية
+            delete_user_meta($user->ID, 'wzsi_inbox');
+            $n_table = WZSI_Notify::table_name();
+            $n_deleted = $wpdb->query($wpdb->prepare(
+                "DELETE FROM {$n_table} WHERE user_id = %d",
+                $user->ID
+            ));
+            if ($n_deleted > 0) {
+                $items_removed = true;
+            }
         }
 
         return array(

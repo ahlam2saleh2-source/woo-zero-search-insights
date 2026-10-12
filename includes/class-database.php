@@ -75,6 +75,27 @@ class WZSI_Database
         ) {$charset_collate};";
         dbDelta($sql_maps);
 
+        // F-9 (v1.2.0): جدول سجل الإشعارات المرسلة للزبائن
+        $notifs_table = self::notifs_table_name();
+        $sql_notifs = "CREATE TABLE {$notifs_table} (
+            id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            user_id BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
+            user_email VARCHAR(190) NOT NULL DEFAULT '',
+            term VARCHAR(255) NOT NULL DEFAULT '',
+            product_id BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
+            product_url VARCHAR(500) DEFAULT NULL,
+            channel VARCHAR(20) NOT NULL DEFAULT 'email',
+            status VARCHAR(20) NOT NULL DEFAULT 'sent',
+            error_text TEXT NULL,
+            lang VARCHAR(5) NOT NULL DEFAULT 'ar',
+            sent_by BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
+            created_at DATETIME NOT NULL,
+            PRIMARY KEY  (id),
+            KEY idx_notif_user (user_id),
+            KEY idx_notif_created (created_at)
+        ) {$charset_collate};";
+        dbDelta($sql_notifs);
+
         // الإصلاح: كان "CREATE INDEX IF NOT EXISTS" صيغة MariaDB فقط وتسبب خطأ DB صامت على MySQL.
         // الآن نفحص وجود الفهرس أولاً بطريقة متوافقة مع MySQL وMariaDB معًا.
         $indexes = $wpdb->get_results("SHOW INDEX FROM {$table_name}");
@@ -99,6 +120,17 @@ class WZSI_Database
     {
         global $wpdb;
         return $wpdb->prefix . 'woo_zero_search_maps';
+    }
+
+    /**
+     * F-9: اسم جدول سجل الإشعارات (مع prefix)
+     *
+     * @return string
+     */
+    public static function notifs_table_name()
+    {
+        global $wpdb;
+        return $wpdb->prefix . 'woo_zero_search_notifications';
     }
 
     /**
@@ -455,6 +487,16 @@ class WZSI_Database
             $where .= " AND is_ajax = %d";
             $params[] = (int) $args['type'];
         }
+        // F-10 (v1.2.0): فلتر المستخدم — null = الكل، -1 = الضيوف، >0 = مستخدم محدد
+        if (isset($args['user_id']) && null !== $args['user_id']) {
+            $uid = (int) $args['user_id'];
+            if (-1 === $uid) {
+                $where .= " AND user_id = 0";
+            } elseif ($uid > 0) {
+                $where .= " AND user_id = %d";
+                $params[] = $uid;
+            }
+        }
 
         $per_page = max(1, (int) ($args['per_page'] ?? 50));
         $page     = max(1, (int) ($args['page'] ?? 1));
@@ -495,6 +537,116 @@ class WZSI_Database
              {$where}
              ORDER BY searched_at DESC
              LIMIT " . (int) $limit
+        );
+    }
+
+    /**
+     * F-10 (v1.2.0): المستخدمون الذين لديهم عمليات بحث مسجلة — لقائمة فلترة المستخدم
+     *
+     * @return array[] {id, name, searches, zeros, last_at}
+     */
+    public static function get_logs_users($limit = 200)
+    {
+        global $wpdb;
+        $t = self::table_name();
+        $u = $wpdb->users;
+
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT l.user_id AS id, u.display_name AS name,
+                    COUNT(*) AS searches,
+                    SUM(CASE WHEN l.results_count = 0 THEN 1 ELSE 0 END) AS zeros,
+                    MAX(l.searched_at) AS last_at
+             FROM {$t} l
+             INNER JOIN {$u} u ON u.ID = l.user_id
+             WHERE l.user_id > 0
+             GROUP BY l.user_id, u.display_name
+             ORDER BY zeros DESC, searches DESC
+             LIMIT %d",
+            max(1, (int) $limit)
+        ));
+
+        return is_array($rows) ? $rows : array();
+    }
+
+    /**
+     * F-10 (v1.2.0): العرض المجمع حسب المنتج المبحوث (المصطلح)
+     * كل صف = مصطلح صفري النتائج مع جمهوره: مسجلون (قابلون للإشعار) + ضيوف (غير قابلين)
+     *
+     * @param array $args {page, per_page, q, days}
+     * @return array {rows, total, page, per_page, pages}
+     */
+    public static function get_grouped_terms($args = array())
+    {
+        global $wpdb;
+        $t = self::table_name();
+
+        $where  = "WHERE results_count = 0";
+        $params = array();
+
+        if (!empty($args['q'])) {
+            $where .= " AND search_term_normalized LIKE %s";
+            $params[] = '%' . $wpdb->esc_like(self::normalize_term((string) $args['q'])) . '%';
+        }
+        if (!empty($args['days']) && (int) $args['days'] > 0) {
+            $where .= " AND searched_at > DATE_SUB(NOW(), INTERVAL %d DAY)";
+            $params[] = (int) $args['days'];
+        }
+
+        $per_page = max(1, (int) ($args['per_page'] ?? 25));
+        $page     = max(1, (int) ($args['page'] ?? 1));
+        $offset   = ($page - 1) * $per_page;
+
+        $count_sql = "SELECT COUNT(DISTINCT search_term_normalized) FROM {$t} {$where}";
+        $total = (int) (empty($params) ? $wpdb->get_var($count_sql) : $wpdb->get_var($wpdb->prepare($count_sql, $params)));
+
+        $rows_sql = "SELECT search_term_normalized AS norm,
+                    COUNT(*) AS searches,
+                    COUNT(DISTINCT CASE WHEN user_id > 0 THEN user_id END) AS reg_users,
+                    SUM(CASE WHEN user_id > 0 THEN 1 ELSE 0 END) AS reg_searches,
+                    SUM(CASE WHEN user_id = 0 THEN 1 ELSE 0 END) AS guest_searches,
+                    MAX(searched_at) AS last_at
+             FROM {$t} {$where}
+             GROUP BY search_term_normalized
+             ORDER BY searches DESC, last_at DESC
+             LIMIT %d OFFSET %d";
+        $rows = $wpdb->get_results($wpdb->prepare($rows_sql, array_merge($params, array($per_page, $offset))));
+        if (!is_array($rows)) {
+            $rows = array();
+        }
+
+        // نص العرض: أحدث صيغة أصلية للمصطلح (استعلام واحد لكل الصفحة — متوافق مع MySQL و SQLite)
+        if (!empty($rows)) {
+            $norms = array();
+            foreach ($rows as $r) {
+                $norms[] = $r->norm;
+            }
+            $placeholders = implode(',', array_fill(0, count($norms), '%s'));
+            $display = $wpdb->get_results($wpdb->prepare(
+                "SELECT search_term_normalized, search_term
+                 FROM {$t}
+                 WHERE search_term_normalized IN ({$placeholders})
+                 ORDER BY id DESC",
+                $norms
+            ));
+            $seen = array();
+            if (is_array($display)) {
+                foreach ($display as $d) {
+                    if (!isset($seen[$d->search_term_normalized])) {
+                        $seen[$d->search_term_normalized] = $d->search_term;
+                    }
+                }
+            }
+            foreach ($rows as $r) {
+                $r->term = isset($seen[$r->norm]) ? $seen[$r->norm] : $r->norm;
+            }
+        }
+
+        return array(
+            'rows'     => $rows,
+            'total'    => $total,
+            'page'     => $page,
+            'per_page' => $per_page,
+            'pages'    => (int) ceil($total / $per_page),
         );
     }
 

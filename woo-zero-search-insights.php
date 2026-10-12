@@ -2,8 +2,8 @@
 /**
  * Plugin Name:       Woo Zero Search Insights
  * Plugin URI:        https://github.com/ahlam2saleh2-source/woo-zero-search-insights
- * Description:       Track WooCommerce searches that return no results. Dashboard, CSV export, Slack/Discord/Telegram alerts, email digest, term→product mapping, 6 themes, AR/EN.
- * Version:           1.1.0
+ * Description:       Track WooCommerce searches that return no results — and close the gap: smart term→product mappings, customer notifications (in-store + email), email digest, Slack/Discord/Telegram, AR/EN.
+ * Version:           1.2.0
  * Author:            az-soft4media
  * Author URI:        https://troyawin.tech
  * Text Domain:       woo-zero-search-insights
@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
 }
 
 // ════════════ التعريفات ════════════
-define('WZSI_VERSION',           '1.1.0');
+define('WZSI_VERSION',           '1.2.0');
 define('WZSI_PLUGIN_FILE',        __FILE__);
 define('WZSI_PLUGIN_DIR',         plugin_dir_path(__FILE__));
 define('WZSI_PLUGIN_URL',         plugin_dir_url(__FILE__));
@@ -90,6 +90,9 @@ function wzsi_init() {
 
     // F-3: التقرير البريدي الدوري
     WZSI_Email::instance();
+
+    // F-9 (v1.2.0): إشعارات الزبائن (فردي + جماعي، داخل المتجر + بريد)
+    WZSI_Notify::instance();
 
     // كلاسات Premium
     WZSI_Dashboard_Widget::instance();

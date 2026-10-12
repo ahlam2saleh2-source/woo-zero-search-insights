@@ -82,6 +82,36 @@ class WZSI_Admin
             'map_error_url'   => wzsi_t('map_error_url'),
             'map_error_target' => wzsi_t('map_error_target'),
             'map_error_term'  => wzsi_t('map_error_term'),
+            // F-9 (v1.2.0): الإشعارات
+            'ntf_loading'        => wzsi_t('ntf_loading'),
+            'ntf_no_registered'  => wzsi_t('ntf_no_registered'),
+            'ntf_guests_note_prefix' => wzsi_t('ntf_guests_note_prefix'),
+            'ntf_guests_note_suffix' => wzsi_t('ntf_guests_note_suffix'),
+            'ntf_error_channel'  => wzsi_t('ntf_error_channel'),
+            'ntf_error_product'  => wzsi_t('ntf_error_product'),
+            'ntf_error_email'    => wzsi_t('ntf_error_email'),
+            'ntf_error_send'     => wzsi_t('ntf_error_send'),
+            'ntf_done_ok'        => wzsi_t('ntf_done_ok'),
+            'mail_test_ok'       => wzsi_t('mail_test_ok'),
+            'mail_test_fail'     => wzsi_t('mail_test_fail'),
+        ));
+
+        // F-9: قوالب الإشعارات للنافذة (افتراضي أو المحفوظ)
+        $settings_for_js = get_option('wzsi_settings', array());
+        $tpl_ar_subj = trim((string) ($settings_for_js['notify_template_subject_ar'] ?? ''));
+        $tpl_ar_body = trim((string) ($settings_for_js['notify_template_body_ar'] ?? ''));
+        $tpl_en_subj = trim((string) ($settings_for_js['notify_template_subject_en'] ?? ''));
+        $tpl_en_body = trim((string) ($settings_for_js['notify_template_body_en'] ?? ''));
+        $ntf_defaults = WZSI_Notify::default_templates();
+        wp_localize_script('wzsm-admin', 'wzsi_ntf_tpl', array(
+            'ar' => array(
+                'subject' => ('' !== $tpl_ar_subj) ? $tpl_ar_subj : $ntf_defaults['ar']['subject'],
+                'body'    => ('' !== $tpl_ar_body) ? $tpl_ar_body : $ntf_defaults['ar']['body'],
+            ),
+            'en' => array(
+                'subject' => ('' !== $tpl_en_subj) ? $tpl_en_subj : $ntf_defaults['en']['subject'],
+                'body'    => ('' !== $tpl_en_body) ? $tpl_en_body : $ntf_defaults['en']['body'],
+            ),
         ));
     }
 
@@ -139,6 +169,13 @@ class WZSI_Admin
             $type = 'any';
         }
 
+        // F-10 (v1.2.0): طريقة العرض + فلتر المستخدم
+        $view = isset($_GET['view']) ? sanitize_key(wp_unslash($_GET['view'])) : 'list';
+        if (!in_array($view, array('list', 'grouped'), true)) {
+            $view = 'list';
+        }
+        $user_id = isset($_GET['user_id']) ? (int) $_GET['user_id'] : 0; // 0=الكل، -1=ضيوف، >0=مستخدم
+
         // تحقق صارم من التواريخ (Y-m-d)
         $from = null;
         $to   = null;
@@ -157,20 +194,36 @@ class WZSI_Admin
 
         $page = isset($_GET['paged']) ? max(1, (int) $_GET['paged']) : 1;
 
-        $result = WZSI_Database::get_logs_filtered(array(
-            'zero_only' => $zero_only,
-            'q'         => $q,
-            'from'      => $from,
-            'to'        => $to,
-            'type'      => ('any' === $type) ? null : $type,
-            'page'      => $page,
-            'per_page'  => 50,
-        ));
+        // قائمة المستخدمين للفلتر (سقف 200)
+        $logs_users = WZSI_Database::get_logs_users(200);
 
-        $logs  = $result['rows'];
-        $total = $result['total'];
-        $pages = $result['pages'];
-        $offset = ($result['page'] - 1) * $result['per_page'];
+        if ('grouped' === $view) {
+            // العرض المجمع حسب المنتج المبحوث (صفرية فقط) — فلتر المستخدم لا ينطبق على التجميع
+            $result = WZSI_Database::get_grouped_terms(array(
+                'q'        => $q,
+                'page'     => $page,
+                'per_page' => 25,
+            ));
+            $logs  = $result['rows'];
+            $total = $result['total'];
+            $pages = $result['pages'];
+            $offset = ($result['page'] - 1) * $result['per_page'];
+        } else {
+            $result = WZSI_Database::get_logs_filtered(array(
+                'zero_only' => $zero_only,
+                'q'         => $q,
+                'from'      => $from,
+                'to'        => $to,
+                'type'      => ('any' === $type) ? null : $type,
+                'user_id'   => $user_id,
+                'page'      => $page,
+                'per_page'  => 50,
+            ));
+            $logs  = $result['rows'];
+            $total = $result['total'];
+            $pages = $result['pages'];
+            $offset = ($result['page'] - 1) * $result['per_page'];
+        }
 
         require WZSI_PLUGIN_DIR . 'includes/views/logs.php';
     }

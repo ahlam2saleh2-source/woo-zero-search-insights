@@ -1,8 +1,8 @@
 # Woo Zero Search Insights
 
-Track every WooCommerce search that returns **zero results** — and turn missed searches into product ideas, SEO keywords, and real demand data. v1.1.0 goes further: **map any zero term to an existing product** so visitors find results instead of an empty page.
+Track every WooCommerce search that returns **zero results** — and turn missed searches into product ideas, SEO keywords, and real demand data. v1.2.0 closes the loop with the customer: **notify one user — or everyone who searched a term — the moment a matching product exists** (in-store + email, editable AR/EN templates).
 
-**تتبّع كل عملية بحث في ووكومرس تنتهي بصفر نتائج — وحوّلها إلى أفكار منتجات وكلمات مفتاحية وبيانات طلب حقيقية. الإصدار 1.1.0 يذهب أبعد: اربط أي مصطلح صفري بمنتج موجود فيجد الزائر نتيجة بدل صفحة فارغة.**
+**تتبّع كل عملية بحث في ووكومرس تنتهي بصفر نتائج — وحوّلها إلى أفكار منتجات وكلمات مفتاحية وبيانات طلب حقيقية. الإصدار 1.2.0 يُغلق الحلقة مع الزبون: أبلغ مستخدماً واحداً — أو كل من بحث عن مصطلح — لحظة توفر منتج مطابق (داخل المتجر + بريد، بقوالب عربية/إنجليزية قابلة للتعديل).**
 
 - **Requires / المتطلبات:** WordPress 5.6+ · WooCommerce 5.0+ · PHP 7.4+ (tested up to WP 7.1 / WC 11.2)
 - **License / الترخيص:** GPLv2 or later
@@ -10,16 +10,16 @@ Track every WooCommerce search that returns **zero results** — and turn missed
 
 ---
 
-## Download v1.1.0 — تحميل الإصدار
+## Download v1.2.0 — تحميل الإصدار
 
 | File / الملف | Description / الوصف |
 |------|-------------|
-| [woo-zero-search-insights-1.1.0.zip](release/v1.1.0/woo-zero-search-insights-1.1.0.zip) | Installable plugin — ملف الإضافة الجاهز للتثبيت المباشر (Plugins → Add New → Upload Plugin) |
-| [woo-zero-search-insights-v1.1.0-package.zip](release/v1.1.0/woo-zero-search-insights-v1.1.0-package.zip) | Full sales package — الحزمة الكاملة: الإضافة + 7 لقطات شاشة + أدلة PDF ثنائية اللغة + مواد التسويق |
-| [GitHub Releases](../../releases/tag/v1.1.0) | All release assets in one page — كل ملفات الإصدار في صفحة واحدة |
-| [🗺️ ROADMAP.md](ROADMAP.md) | Next version plan (v1.2.0) — what's coming & how — خطة النسخة القادمة: ماذا سنضيف وكيف ستنفّذ |
+| [woo-zero-search-insights-1.2.0.zip](release/v1.2.0/woo-zero-search-insights-1.2.0.zip) | Installable plugin — ملف الإضافة الجاهز للتثبيت المباشر (Plugins → Add New → Upload Plugin) |
+| [woo-zero-search-insights-v1.2.0-package.zip](release/v1.2.0/woo-zero-search-insights-v1.2.0-package.zip) | Full sales package — الحزمة الكاملة: الإضافة + 9 لقطات شاشة + أدلة PDF ثنائية اللغة + مواد التسويق |
+| [GitHub Releases](../../releases/tag/v1.2.0) | All release assets in one page — كل ملفات الإصدار في صفحة واحدة |
+| [🗺️ ROADMAP.md](ROADMAP.md) | What shipped & what's next — ما نُفّذ وما هو قادم |
 
-**Docs & guides / المستندات والأدلة:** [release/v1.1.0/](release/v1.1.0) · [Installation & user guide AR/EN (PDF)](release/v1.1.0/docs/installation-user-guide-AR-EN.pdf) · [CHANGELOG v1.1.0](release/v1.1.0/docs/CHANGELOG-1.1.0.txt) · [Start here / ابدأ من هنا](release/v1.1.0/README-START-HERE.txt) · [v1.0.1 (previous / السابق)](release/v1.0.1)
+**Docs & guides / المستندات والأدلة:** [release/v1.2.0/](release/v1.2.0) · [Installation & user guide AR/EN (PDF)](release/v1.2.0/docs/installation-user-guide-AR-EN.pdf) · [CHANGELOG v1.2.0](release/v1.2.0/docs/CHANGELOG-1.2.0.txt) · [Start here / ابدأ من هنا](release/v1.2.0/README-START-HERE.txt) · [v1.1.0 (previous / السابق)](release/v1.1.0)
 
 ---
 
@@ -44,19 +44,26 @@ When a customer searches your store and gets **no results**, that is not a dead 
 - **Bot filtering + Arabic normalization / فلترة روبوتات وتطبيع عربي** — crawlers excluded; hamza/taa-marbuta/diacritics folded automatically.
 - **White-label / علامة بيضاء** — optional branding removal for agencies.
 
-## What's new in 1.1.0 — الجديد في هذا الإصدار
+## What's new in 1.2.0 — الجديد في هذا الإصدار
 
-The release that closes the loop: from *reporting* gaps to *fixing* them. إصدار إغلاق الحلقة: من اكتشاف الفجوات إلى سدّها.
+The release that closes the loop **with the customer**. إصدار إغلاق الحلقة **مع الزبون نفسه**.
 
-- **Smart Mappings / الربط الذكي** — map any zero-result term to a product/category/URL, with three storefront behaviors (none / add-to-results / redirect) and a usage counter. اربط أي مصطلح صفري بمنتج أو تصنيف أو رابط مع ثلاثة سلوكيات وعدّاد استفادات.
-- **Email digest / تقرير بريدي** — daily or weekly HTML summary (auto-RTL) with stats, top 10 zero terms and the previous-period delta + test-send button. تقرير يومي/أسبوعي مع زر إرسال تجريبي.
-- **Telegram + threshold / تلغرام وعتبة** — new channel, per-channel test buttons, alerts only after a term repeats N times in 24h. قناة جديدة وعتبة ذكية وأزرار اختبار.
-- **Bot filtering + Arabic normalization / فلترة روبوتات وتطبيع عربي** — crawlers no longer inflate stats; “أحذية / احذيه / أحذيةَ” group as one opportunity with safe batched migration. عناكب الزحف لا تُحصى، والمصطلحات العربية المتشابهة تتجمع تلقائياً.
-- **Log filters + chart comparison / فلاتر ومقارنة** — search & date & type filters on logs; dashed previous-period line in the chart with a colored delta badge.
-- **WP-CLI & REST + settings backup / أدوات الوكيلات** — `wp wzsi stats|top|logs|clear|prune`, read-only `wzsi/v1` endpoints (no PII), JSON settings export/import.
-- **Performance / أداء** — version-keyed 5-min dashboard cache with instant invalidation. كاش 5 دقائق بمفتاح إصدار مع إبطال فوري.
+- **Customer notifications / إشعارات الزبائن** — from the logs page: notify ONE customer (button next to any failed search) or EVERY registered user who searched a term (grouped view). From the logs page directly. من صفحة السجلات: زر بجانب كل بحث فاشل لإشعار مستخدمه، وزر جماعي في العرض المجمع لكل من بحث عن المصطلح.
+- **Two channels / قناتان** — in-store banner (appears on the customer's next visit, dismissible) + HTML email; admin picks the method per send. Guests can never be notified (no account, no email — shown clearly). شريط داخل المتجر يظهر عند زيارة العميل التالية + بريد HTML؛ المدير يختار؛ الضيوف لا يمكن إشعارهم (موضّح بوضوح).
+- **Editable AR/EN templates / قوالب قابلة للتعديل** — commercial templates built-in, placeholders auto-filled per recipient (`{customer_name} {term} {product_name} {product_url} {site_name}`), editable in both languages. قوالب تجارية جاهزة تُعوض حقولها لكل مستلم، قابلة للتعديل بالعربية والإنجليزية.
+- **Searches by user / by product / البحث حسب المستخدم والمنتج** — filter the log by a user and see which of their searches failed, or open the grouped by-product view with the audience size (registered vs guests) per term. فلترة السجل بمستخدم لرؤية بحوثه الفاشلة، أو عرض مجمع حسب المنتج مع حجم الجمهور لكل مصطلح.
+- **Email health check / فحص صحة البريد** — wp_mail/SMTP diagnostics + a real test message with the exact failure reason, so notifications never go out blind. تشخيص جاهزية البريد + رسالة تجريبية مع سبب الفشل بدقة.
+- **Notifications log / سجل الإشعارات** — who was notified, when, via which channel, and failures with reasons. من أُشعر ومتى وبأي قناة والإخفاقات بأسبابها.
+- **Privacy extended / خصوصية موسعة** — WP personal-data eraser clears the in-store inbox + notification rows; exporter includes notifications. الماحو يمسح صندوق المتجر والسجل، والمصدّر يشمل الإشعارات.
 
-Full details: [CHANGELOG-1.1.0.txt](release/v1.1.0/docs/CHANGELOG-1.1.0.txt)
+Full details: [CHANGELOG-1.2.0.txt](release/v1.2.0/docs/CHANGELOG-1.2.0.txt)
+
+<details>
+<summary><b>What was in 1.1.0 — ماذا كان في 1.1.0</b></summary>
+
+The release that closed the loop: from *reporting* gaps to *fixing* them — Smart Mappings (term→product/category/URL with three storefront behaviors + hits counter), scheduled email digest, Telegram + notification threshold, bot filtering, Arabic normalization with batched migration, log filters, chart comparison, WP-CLI/REST, settings backup, 5-min dashboard cache. Full details: [CHANGELOG-1.1.0.txt](release/v1.1.0/docs/CHANGELOG-1.1.0.txt)
+
+</details>
 
 <details>
 <summary><b>What was in 1.0.1 — ماذا كان في 1.0.1</b></summary>

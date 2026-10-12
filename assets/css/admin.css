@@ -200,3 +200,17 @@ body.wzsi-theme-midnight, .wzsi-theme-midnight #wpcontent, .wzsi-theme-midnight 
 .wzsi-map-result:hover { background: #f0f6fc; }
 .wzsi-map-noresult { display: block; padding: 10px; color: #8c8f94; }
 .wzsi-map-actions { display: flex; gap: 8px; }
+
+/* ═══════════ F-9 (v1.2.0): إشعارات الزبائن ═══════════ */
+.wzsm-tag-user { background: #00a32a; color: #fff; }
+.wzsm-user-link { text-decoration: none; font-weight: 600; }
+.wzsm-user-link:hover { text-decoration: underline; }
+.wzsm-no-notify { font-size: 11px; }
+#wzsi-ntf-modal .wzsi-map-dialog { width: 680px; }
+#wzsi-ntf-product-results { display: none; border: 1px solid #dcdcde; border-radius: 6px; margin-top: 6px; max-height: 180px; overflow: auto; background: #fff; }
+#wzsi-ntf-recipients-list label { cursor: pointer; }
+.wzsi-ntf-selected { margin: 8px 0 0; }
+/* فحص صحة البريد */
+#wzsi-mail-test-status { font-weight: 600; }
+.wzsi-mail-check-ok { color: #00a32a; font-weight: 700; }
+.wzsi-mail-check-bad { color: #d63638; font-weight: 700; }

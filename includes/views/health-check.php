@@ -22,6 +22,7 @@ $classes_status = array(
     'WZSI_Premium_UI'        => class_exists('WZSI_Premium_UI'),
     'WZSI_Mappings'           => class_exists('WZSI_Mappings'),
     'WZSI_Email'              => class_exists('WZSI_Email'),
+    'WZSI_Notify'             => class_exists('WZSI_Notify'),
 );
 
 $settings = get_option('wzsi_settings', array());
@@ -40,6 +41,15 @@ $migration = class_exists('WZSI_Database') ? WZSI_Database::migration_status() :
 $maps_table = $wpdb->prefix . 'woo_zero_search_maps';
 $maps_exists = !empty($wpdb->get_results("SHOW TABLES LIKE '{$maps_table}'", ARRAY_N));
 $maps_count = $maps_exists ? (int) $wpdb->get_var("SELECT COUNT(*) FROM {$maps_table}") : 0;
+
+// F-9 (v1.2.0): صحة البريد + سجل الإشعارات
+$mail_health  = get_option('wzsi_mail_health', array());
+$mail_checks  = WZSI_Notify::mail_diagnostics();
+$notifs_table = WZSI_Notify::table_name();
+$notifs_exists = !empty($wpdb->get_results("SHOW TABLES LIKE '{$notifs_table}'", ARRAY_N));
+$notifs_recent = $notifs_exists
+    ? $wpdb->get_results("SELECT * FROM {$notifs_table} ORDER BY id DESC LIMIT 8")
+    : array();
 ?>
 <div class="wrap wzsm-wrap">
     <h1>🩺 <?php echo esc_html(wzsi_t('menu_health_check')); ?></h1>
@@ -138,6 +148,92 @@ $maps_count = $maps_exists ? (int) $wpdb->get_var("SELECT COUNT(*) FROM {$maps_t
             <p style="color:#666; font-size:11px;">
                 <?php echo esc_html(wzsi_t('hc_debug_note')); ?>
             </p>
+        <?php endif; ?>
+    </div>
+
+    <?php // ═══ F-9 (v1.2.0): صحة البريد الإلكتروني ═══ ?>
+    <div class="wzsm-stat-card" style="background:#fff; padding:20px; border:1px solid #ddd; border-radius:8px; margin-bottom:20px;">
+        <h2>✉️ <?php echo esc_html(wzsi_t('hc_mail_title')); ?></h2>
+        <p style="color:#555; font-size:13px;"><?php echo esc_html(wzsi_t('hc_mail_desc')); ?></p>
+        <table class="form-table">
+            <tr><th><?php echo esc_html(wzsi_t('hc_mail_check_wpmail')); ?></th>
+                <td><?php echo !empty($mail_checks['wp_mail_exists']) ? '<span class="wzsi-mail-check-ok">✅ ' . esc_html__('YES', 'woo-zero-search-insights') . '</span>' : '<span class="wzsi-mail-check-bad">❌</span>'; ?></td></tr>
+            <tr><th><?php echo esc_html(wzsi_t('hc_mail_check_from')); ?></th>
+                <td><code><?php echo esc_html((string) $mail_checks['from_address']); ?></code></td></tr>
+            <tr><th><?php echo esc_html(wzsi_t('hc_mail_check_smtp')); ?></th>
+                <td><?php echo !empty($mail_checks['smtp_plugin']) ? '<code>' . esc_html((string) $mail_checks['smtp_plugin']) . '</code>' : '<span class="wzsm-muted">—</span>'; ?></td></tr>
+            <tr><th><?php echo esc_html(wzsi_t('hc_mail_check_last')); ?></th>
+                <td>
+                <?php
+                if (!empty($mail_health['checked_at'])) {
+                    $when = mysql2date(get_option('date_format') . ' H:i', $mail_health['checked_at']);
+                    if (!empty($mail_health['ok'])) {
+                        echo '<span class="wzsi-mail-check-ok">✅ ' . esc_html(sprintf(wzsi_t('hc_mail_last_ok'), $when)) . '</span>';
+                    } else {
+                        echo '<span class="wzsi-mail-check-bad">❌ ' . esc_html(sprintf(wzsi_t('hc_mail_last_failed'), $when)) . '</span>'
+                            . (!empty($mail_health['error']) ? '<br><code>' . esc_html((string) $mail_health['error']) . '</code>' : '');
+                    }
+                } else {
+                    echo '<span class="wzsm-muted">' . esc_html(wzsi_t('hc_mail_last_never')) . '</span>';
+                }
+                ?>
+                </td></tr>
+        </table>
+        <p style="margin-bottom:4px;"><strong><?php echo esc_html(wzsi_t('hc_mail_send_to')); ?>:</strong></p>
+        <p>
+            <input type="email" id="wzsi-mail-test-to" class="regular-text" value="<?php echo esc_attr((string) get_option('admin_email')); ?>" placeholder="admin@example.com">
+            <button type="button" class="button button-secondary" id="wzsi-mail-test-btn">&#9993; <?php echo esc_html(wzsi_t('hc_mail_btn')); ?></button>
+            <span id="wzsi-mail-test-status"></span>
+        </p>
+    </div>
+
+    <?php // ═══ F-9 (v1.2.0): سجل إشعارات الزبائن ═══ ?>
+    <div class="wzsm-stat-card" style="background:#fff; padding:20px; border:1px solid #ddd; border-radius:8px; margin-bottom:20px;">
+        <h2>🔔 <?php echo esc_html(wzsi_t('hc_notifs_title')); ?></h2>
+        <?php if (empty($notifs_recent)) : ?>
+            <p class="wzsm-muted"><?php echo esc_html(wzsi_t('empty_no_logs')); ?></p>
+        <?php else : ?>
+            <table class="widefat striped">
+                <thead>
+                    <tr>
+                        <th width="50"><?php echo esc_html(wzsi_t('col_id')); ?></th>
+                        <th><?php echo esc_html(wzsi_t('col_user')); ?></th>
+                        <th><?php echo esc_html(wzsi_t('col_term')); ?></th>
+                        <th width="110"><?php echo esc_html(wzsi_t('ntf_channels_label')); ?></th>
+                        <th width="90"><?php echo esc_html(wzsi_t('map_col_status')); ?></th>
+                        <th width="170"><?php echo esc_html(wzsi_t('col_date')); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($notifs_recent as $n) : ?>
+                    <tr>
+                        <td>#<?php echo (int) $n->id; ?></td>
+                        <td>
+                            <?php
+                            if ($n->user_id > 0) {
+                                $nu = get_user_by('id', $n->user_id);
+                                echo $nu ? esc_html($nu->display_name) : ('#' . (int) $n->user_id);
+                            } elseif ($n->user_email) {
+                                echo esc_html($n->user_email);
+                            } else {
+                                echo '—';
+                            }
+                            ?>
+                        </td>
+                        <td><?php echo esc_html($n->term); ?></td>
+                        <td><?php echo ('site' === $n->channel) ? esc_html(wzsi_t('ntf_channel_site')) : esc_html(wzsi_t('ntf_channel_email')); ?></td>
+                        <td>
+                            <?php if ('sent' === $n->status) : ?>
+                                <span style="color:#00a32a;font-weight:600;">✅</span>
+                            <?php else : ?>
+                                <span style="color:#d63638;font-weight:600;" title="<?php echo esc_attr((string) $n->error_text); ?>">❌</span>
+                            <?php endif; ?>
+                        </td>
+                        <td><?php echo esc_html(mysql2date(get_option('date_format') . ' H:i', $n->created_at)); ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
         <?php endif; ?>
     </div>
 </div>

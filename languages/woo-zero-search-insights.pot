@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the Woo Zero Search Insights package.
 msgid ""
 msgstr ""
-"Project-Id-Version: Woo Zero Search Insights 1.1.0\n"
+"Project-Id-Version: Woo Zero Search Insights 1.2.0\n"
 "Report-Msgid-Bugs-To: https://github.com/ahlam2saleh2-source/woo-zero-search-insights/issues\n"
 "POT-Creation-Date: 2026-10-12 00:00+0000\n"
 "MIME-Version: 1.0\n"
@@ -17,24 +17,15 @@ msgid "Woo Zero Search Insights"
 msgstr ""
 
 #. Plugin Description
-msgid "Track WooCommerce searches that return no results. Dashboard, CSV export, Slack/Discord/Telegram alerts, email digest, term-product mapping, 6 themes, AR/EN."
+msgid "Track WooCommerce searches that return no results — and close the gap: smart term→product mappings, customer notifications (in-store + email), email digest, Slack/Discord/Telegram, AR/EN."
 msgstr ""
 
-#. Author
+#. Author of the plugin
 msgid "az-soft4media"
 msgstr ""
 
-# ═══════════════════════════════════════════════════════════════
-# ملاحظة للمترجمين / Translator note:
-#
-# نصوص واجهة الإضافة تُدار بنظام i18n مزدوج داخلي (عربي/إنجليزي)
-# في includes/class-i18n.php. اعتبارًا من الإصدار 1.0.1 لم تعد هناك
-# سلاسل gettext مفعّلة في الكود — هذه القائمة للمرجع والتوسّع المستقبلي
-# (لغة ثالثة عبر WordPress gettext إذا رغبت).
-#
-# All UI strings are managed by the plugin's internal bilingual
-# dictionary (includes/class-i18n.php). Since v1.0.1 no active
-# gettext strings remain in code — this catalog is kept for
-# reference and future third-language expansion.
-# ═══════════════════════════════════════════════════════════════
-
+#. NOTE: The plugin ships a custom bilingual (AR/EN) dictionary in
+#. includes/class-i18n.php (~230 keys) that powers the whole admin UI,
+#. honoring the ui_lang setting regardless of the site locale. This .pot
+#. covers the plugin header strings; full .po/.mo translations can be
+#. generated from that dictionary.

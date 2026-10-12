@@ -290,5 +290,231 @@
                 }
             });
         });
+
+        // ════════ F-9 (v1.2.0): إشعارات الزبائن — نافذة المؤلف ════════
+        var ntfState = { mode: 'single', userIds: [], term: '', recipientsLoaded: false };
+
+        function wzsiNtfTemplates() {
+            return (window.wzsi_ntf_tpl || { ar: { subject: '', body: '' }, en: { subject: '', body: '' } });
+        }
+
+        function wzsiNtfFillTemplate() {
+            var lang = $('#wzsi-ntf-lang').val();
+            var tpl;
+            if (lang === 'auto') {
+                // نعرض قالب لغة الواجهة الحالية كنقطة بداية؛ auto يُقرر لكل مستخدم عند الإرسال
+                var isRtl = $('body').hasClass('rtl');
+                lang = isRtl ? 'ar' : 'en';
+            }
+            tpl = wzsiNtfTemplates()[lang] || wzsiNtfTemplates().ar;
+            if (tpl) {
+                $('#wzsi-ntf-subject').val(tpl.subject || '');
+                $('#wzsi-ntf-body').val(tpl.body || '');
+            }
+        }
+
+        function wzsiNtfReset() {
+            ntfState = { mode: 'single', userIds: [], term: '', recipientsLoaded: false };
+            $('#wzsi-ntf-product-id').val(0);
+            $('#wzsi-ntf-product-search').val('');
+            $('#wzsi-ntf-product-results').empty().hide();
+            $('.wzsi-ntf-selected').hide();
+            $('#wzsi-ntf-lang').val('auto');
+            $('#wzsi-ntf-ch-email').prop('checked', true);
+            $('#wzsi-ntf-ch-site').prop('checked', false);
+            $('#wzsi-ntf-status').text('');
+            $('#wzsi-ntf-send').prop('disabled', false);
+        }
+
+        // فتح — فردي (من صف السجل)
+        $(document).on('click', '.wzsi-notify-one', function(e) {
+            e.preventDefault();
+            wzsiNtfReset();
+            ntfState.mode = 'single';
+            ntfState.userIds = [String($(this).data('user'))];
+            ntfState.term = String($(this).data('term') || '');
+            $('#wzsi-ntf-single-name').text($(this).data('name') || ('#' + $(this).data('user')));
+            $('#wzsi-ntf-single-email').text($(this).data('email') ? ' — ' + $(this).data('email') : '');
+            $('#wzsi-ntf-single-box').show();
+            $('#wzsi-ntf-recipients-box').hide();
+            $('#wzsi-ntf-term').text(ntfState.term);
+            wzsiNtfFillTemplate();
+            $('#wzsi-ntf-modal').show();
+        });
+
+        // فتح — جماعي (من العرض المجمع): نجلب الجمهور أولاً
+        $(document).on('click', '.wzsi-notify-group', function(e) {
+            e.preventDefault();
+            var $btn = $(this);
+            wzsiNtfReset();
+            ntfState.mode = 'group';
+            ntfState.term = String($btn.data('term') || '');
+            $('#wzsi-ntf-single-box').hide();
+            $('#wzsi-ntf-recipients-box').show();
+            $('#wzsi-ntf-recipients-list').html('<em>' + (wzsi_t_vars.ntf_loading || '…') + '</em>');
+            $('#wzsi-ntf-guests-note').text('');
+            $('#wzsi-ntf-term').text(ntfState.term);
+            wzsiNtfFillTemplate();
+            $('#wzsi-ntf-modal').show();
+
+            $.post(wzsm.ajax_url, {
+                action: 'wzsi_notify_recipients',
+                nonce: wzsm.nonce,
+                term: ntfState.term
+            }, function(resp) {
+                if (!(resp && resp.success)) {
+                    $('#wzsi-ntf-recipients-list').html('<em>—</em>');
+                    return;
+                }
+                var rows = resp.data.registered || [];
+                var html = '';
+                if (!rows.length) {
+                    html = '<em>' + (wzsi_t_vars.ntf_no_registered || '—') + '</em>';
+                }
+                rows.forEach(function(r) {
+                    html += '<label style="display:block;margin:2px 0;">'
+                        + '<input type="checkbox" class="wzsi-ntf-rcpt" value="' + r.id + '" checked> '
+                        + '<strong>' + $('<i>').text(r.name).html() + '</strong> '
+                        + '<span style="color:#666;">' + r.email + '</span>'
+                        + ' <span style="color:#999;">(' + r.searches + 'x)</span></label>';
+                });
+                $('#wzsi-ntf-recipients-list').html(html);
+                if (parseInt(resp.data.guests, 10) > 0) {
+                    $('#wzsi-ntf-guests-note').text(
+                        wzsi_t_vars.ntf_guests_note_prefix + ' ' + resp.data.guests + ' ' + wzsi_t_vars.ntf_guests_note_suffix
+                    );
+                }
+            }).fail(function() {
+                $('#wzsi-ntf-recipients-list').html('<em>—</em>');
+            });
+        });
+
+        $(document).on('click', '#wzsi-ntf-cancel, #wzsi-ntf-modal .wzsi-map-backdrop', function(e) {
+            e.preventDefault();
+            $('#wzsi-ntf-modal').hide();
+        });
+
+        $(document).on('change', '#wzsi-ntf-lang', wzsiNtfFillTemplate);
+
+        // بحث المنتج (نفس نقطة wzsi_search_products)
+        var ntfSearchTimer = null;
+        $(document).on('input', '#wzsi-ntf-product-search', function() {
+            var q = $(this).val();
+            clearTimeout(ntfSearchTimer);
+            if (!q || q.length < 2) {
+                $('#wzsi-ntf-product-results').hide().empty();
+                return;
+            }
+            ntfSearchTimer = setTimeout(function() {
+                $.post(wzsm.ajax_url, {
+                    action: 'wzsi_search_products',
+                    nonce: wzsm.nonce,
+                    q: q
+                }, function(resp) {
+                    if (resp && resp.success && resp.data && resp.data.length) {
+                        var html = '';
+                        resp.data.forEach(function(item) {
+                            html += '<button type="button" class="wzsi-map-result wzsi-ntf-result" data-id="' + item.id + '">' + item.title + '</button>';
+                        });
+                        $('#wzsi-ntf-product-results').html(html).show();
+                    } else {
+                        $('#wzsi-ntf-product-results').html('<span class="wzsi-map-noresult">—</span>').show();
+                    }
+                });
+            }, 300);
+        });
+
+        $(document).on('click', '.wzsi-ntf-result', function(e) {
+            e.preventDefault();
+            var id = parseInt($(this).data('id'), 10) || 0;
+            var label = $(this).text();
+            $('#wzsi-ntf-product-id').val(id);
+            $('#wzsi-ntf-product-search').val(label);
+            $('#wzsi-ntf-product-results').hide();
+            $('.wzsi-ntf-selected span').text(label);
+            $('.wzsi-ntf-selected').show();
+        });
+
+        // الإرسال
+        $(document).on('click', '#wzsi-ntf-send', function(e) {
+            e.preventDefault();
+            var $btn = $(this);
+            var channels = [];
+            if ($('#wzsi-ntf-ch-email').is(':checked')) channels.push('email');
+            if ($('#wzsi-ntf-ch-site').is(':checked')) channels.push('site');
+            if (!channels.length) { wzsiToast(wzsi_t_vars.ntf_error_channel, 'warning'); return; }
+            if (!$('#wzsi-ntf-product-id').val() || parseInt($('#wzsi-ntf-product-id').val(), 10) < 1) {
+                wzsiToast(wzsi_t_vars.ntf_error_product, 'warning');
+                return;
+            }
+
+            var userIds;
+            if (ntfState.mode === 'group') {
+                var checked = $('.wzsi-ntf-rcpt:checked').map(function() { return $(this).val(); }).get();
+                userIds = checked.length ? checked.join(',') : 'all';
+            } else {
+                userIds = ntfState.userIds.join(',');
+            }
+
+            $btn.prop('disabled', true);
+            $('#wzsi-ntf-status').text('…');
+            $.post(wzsm.ajax_url, {
+                action: 'wzsi_notify_send',
+                nonce: wzsm.nonce,
+                user_ids: userIds,
+                term: ntfState.term,
+                product_id: $('#wzsi-ntf-product-id').val(),
+                lang: $('#wzsi-ntf-lang').val(),
+                channels: channels.join(','),
+                subject: $.trim($('#wzsi-ntf-subject').val()),
+                body: $('#wzsi-ntf-body').val()
+            }, function(resp) {
+                if (resp && resp.success) {
+                    var d = resp.data;
+                    var line = wzsi_t_vars.ntf_done_ok
+                        .replace('%site%', d.sent_site || 0)
+                        .replace('%email%', d.sent_email || 0)
+                        .replace('%fail%', d.failed || 0);
+                    $('#wzsi-ntf-status').text(line);
+                    wzsiToast(line, d.failed ? 'warning' : 'success');
+                    setTimeout(function() { location.reload(); }, 1600);
+                } else {
+                    var msg = (resp && resp.data && resp.data.msg) ? resp.data.msg : wzsi_t_vars.ntf_error_send;
+                    $('#wzsi-ntf-status').text('');
+                    wzsiToast(msg, 'error');
+                    $btn.prop('disabled', false);
+                }
+            }).fail(function() {
+                $('#wzsi-ntf-status').text('');
+                wzsiToast(wzsi_t_vars.ntf_error_send, 'error');
+                $btn.prop('disabled', false);
+            });
+        });
+
+        // فحص صحة البريد (صفحة فحص الصحة)
+        $(document).on('click', '#wzsi-mail-test-btn', function(e) {
+            e.preventDefault();
+            var $btn = $(this);
+            var to = $.trim($('#wzsi-mail-test-to').val());
+            if (!to) { wzsiToast(wzsi_t_vars.ntf_error_email, 'warning'); return; }
+            $btn.prop('disabled', true);
+            $('#wzsi-mail-test-status').text('…');
+            $.post(wzsm.ajax_url, {
+                action: 'wzsi_mail_test',
+                nonce: wzsm.nonce,
+                to: to
+            }, function(resp) {
+                $btn.prop('disabled', false);
+                if (resp && resp.success && resp.data.ok) {
+                    $('#wzsi-mail-test-status').css('color', '#00a32a').text(wzsi_t_vars.mail_test_ok);
+                } else {
+                    var err = (resp && resp.data && resp.data.error) ? ' — ' + resp.data.error : '';
+                    $('#wzsi-mail-test-status').css('color', '#d63638').text(wzsi_t_vars.mail_test_fail + err);
+                }
+            }).fail(function() {
+                $btn.prop('disabled', false);
+                $('#wzsi-mail-test-status').css('color', '#d63638').text(wzsi_t_vars.mail_test_fail);
+            });
+        });
     });
 })(jQuery);

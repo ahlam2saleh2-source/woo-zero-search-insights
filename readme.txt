@@ -6,7 +6,7 @@ Tested up to: 7.1
 Requires PHP: 7.4
 WC requires at least: 5.0
 WC tested up to: 11.2
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,6 +26,9 @@ Discover what your customers search for — and never find. Full description in 
 
 * **Automatic tracking** — captures every failed WooCommerce search (standard + AJAX live search + REST Store API) with zero configuration.
 * **Professional dashboard** — stat cards, daily trend chart with previous-period comparison, and a ranked table of top zero-result terms.
+* **Customer notifications (NEW in 1.2.0)** — notify a single customer or everyone who searched a term, right from the logs: in-store notification or email, with editable AR/EN templates.
+* **Searches by user / by product (NEW in 1.2.0)** — filter the log by a specific user (and see which of their searches failed) or view a grouped by-product report with the audience size for each term.
+* **Email health check (NEW in 1.2.0)** — one-click diagnostics of wp_mail/SMTP readiness with a real test message and the exact failure reason.
 * **Smart mappings (NEW in 1.1.0)** — map a zero-result term to a product/category/URL so visitors find something instead of an empty page.
 * **Scheduled email digest (NEW in 1.1.0)** — daily or weekly summary straight to your inbox.
 * **Telegram alerts (NEW in 1.1.0)** — alongside Slack & Discord, with per-channel test buttons and a notification threshold.
@@ -55,6 +58,9 @@ Discover what your customers search for — and never find. Full description in 
 
 * **تتبع تلقائي**: يلتقط كل عمليات البحث في WooCommerce (العادية و AJAX و REST Store API) بدون أي إعداد مسبق.
 * **لوحة معلومات احترافية**: بطاقات إحصائية ورسوم بيانية للاتجاه اليومي مع مقارنة الفترة السابقة.
+* **إشعارات الزبائن (جديد 1.2.0)**: أبلغ زبوناً واحداً أو كل من بحث عن مصطلح، مباشرة من صفحة السجلات: إشعار داخل المتجر أو بريد، بقوالب عربية/إنجليزية قابلة للتعديل.
+* **البحث حسب المستخدم/المنتج (جديد 1.2.0)**: فلتر السجل بمستخدم محدد (وترى أي بحوثه بلا نتائج) أو عرض مجمع حسب المنتج مع حجم جمهور كل مصطلح.
+* **فحص صحة البريد (جديد 1.2.0)**: تشخيص فوري لجاهزية wp_mail/SMTP مع رسالة تجريبية حقيقية وسبب الفشل بدقة.
 * **الربط الذكي (جديد 1.1.0)**: اربط المصطلح الصفري بمنتج/تصنيف/رابط فيظهر للزائر بدل صفحة فارغة.
 * **تقرير بريدي دوري (جديد 1.1.0)**: ملخص يومي أو أسبوعي يصل بريدك مباشرة.
 * **إشعارات Telegram (جديد 1.1.0)**: بجانب Slack/Discord، مع زر اختبار لكل قناة وعتبة إشعارات ذكية.
@@ -104,15 +110,27 @@ No. Deactivation only removes scheduled tasks; your data stays intact. Full unin
 
 == Screenshots ==
 
-1. Dashboard — stat cards with previous-period comparison and daily trend chart (Ocean theme). / لوحة المعلومات — بطاقات مع مقارنة الفترة السابقة واتجاه يومي.
-2. Top zero-result search terms + smart-mapping quick actions (Forest theme). / أعلى المصطلحات بلا نتائج + أزرار الربط الذكي.
-3. Full search logs with search & date filters — successful and zero-result searches together (Sunset theme). / السجل الكامل مع البحث والفلترة بالتاريخ.
-4. Full Arabic (RTL) dashboard — bilingual AR/EN. / لوحة كاملة بالعربية (RTL) — ثنائي اللغة.
-5. Settings — tracking toggles, bot filtering, GDPR IP anonymize, retention, term length (Forest theme). / الإعدادات — التتبع وفلترة الروبوتات والخصوصية والاحتفاظ وحدود الطول.
-6. Settings — Slack/Discord/Telegram webhooks with test buttons, notification threshold, email digest, mapping behavior. / الإعدادات — القنوات مع أزرار اختبار والعتبة والتقرير البريدي وسلوك الربط.
-7. Smart Mappings page — term-to-product management with hits counter. / صفحة الربط الذكي — إدارة الربطات مع عداد الاستفادات.
+1. Dark-mode dashboard — stat cards, previous-period delta and trend chart (Midnight theme). / لوحة الوضع الداكن — بطاقات ومقارنة ورسم بياني (ثيم Midnight).
+2. Search logs filtered by a specific user — her zero-result searches with per-row Notify buttons (Ocean theme). / السجل مفلتراً بمستخدم محدد — بحوثه الصفرية مع زر إشعار لكل صف (ثيم Ocean).
+3. Logs grouped by product — audience size per term (registered vs guests) and a group-notify action (Sunset theme). / العرض المجمع حسب المنتج — حجم الجمهور لكل مصطلح وزر إشعار جماعي (ثيم Sunset).
+4. Customer notification composer — recipient, searched term, product picker with auto-attached link, language, delivery method and editable template (Forest theme). / نافذة إشعار الزبون — المستلم والمصطلح واختيار المنتج بلقائه واللغة وطريقة الإرسال والقالب (ثيم Forest).
+5. Smart Mappings in dark theme — term-to-product management with hits counter. / الربط الذكي بالوضع الداكن — إدارة الربطات مع عداد الاستفادات.
+6. Settings — customer notification templates in Arabic & English, fully editable (RTL). / الإعدادات — قوالب إشعارات الزبائن بالعربية والإنجليزية قابلة للتعديل بالكامل.
+7. Health Check — email-readiness diagnostics with test send and the customer notifications log (Forest theme). / فحص الصحة — تشخيص جاهزية البريد مع إرسال تجريبي وسجل إشعارات الزبائن (ثيم Forest).
+8. Light dashboard with the previous-period comparison chart (Ocean theme). / لوحة فاتحة مع رسم مقارنة الفترة السابقة (ثيم Ocean).
+9. Export flow — choosing save location and file name in the browser's file browser. / مسار التصدير — اختيار مسار واسم الملف من مستعرض الملفات.
 
 == Changelog ==
+
+= 1.2.0 =
+* New: Customer notifications — notify one customer or every registered user who searched a term, right from the logs page. / جديد: إشعارات الزبائن — أبلغ زبوناً واحداً أو كل المسجلين الذين بحثوا مصطلحاً، من صفحة السجلات مباشرة.
+* New: Two delivery channels — in-store notification banner (auto dismiss) + HTML email; guests are never notified. / جديد: قناتا تسليم — إشعار داخل المتجر (شريط قابل للإخفاء) + بريد HTML؛ الضيوف لا يُشعرون.
+* New: Logs grouped-by-product view with per-term audience (registered vs guests). / جديد: عرض مجمع حسب المنتج مع جمهور كل مصطلح (مسجلون/ضيوف).
+* New: Filter logs by a specific user (or guests only) — see each user's failed searches. / جديد: فلترة السجل بمستخدم محدد (أو الضيوف فقط) — ترى بحوث كل مستخدم الفاشلة.
+* New: Editable AR/EN notification templates with placeholders ({customer_name} {term} {product_name} {product_url} {site_name}). / جديد: قوالب إشعارات عربية/إنجليزية قابلة للتعديل مع حقول تعويض تلقائية.
+* New: Email health check — wp_mail/SMTP diagnostics + real test message with the exact failure reason. / جديد: فحص صحة البريد — تشخيصات + رسالة تجريبية حقيقية مع سبب الفشل بدقة.
+* New: Customer notifications log (who was notified, when, via which channel, and failures with reasons). / جديد: سجل إشعارات الزبائن (من أُشعر، متى، بأي قناة، والإخفاقات بأسبابها).
+* New: Privacy integration extended — eraser clears in-store inbox + notification rows; exporter includes notifications. / جديد: توسعة الخصوصية — الماحو يمسح صندوق المتجر وسجل الإشعارات، والمصدّر يشمل الإشعارات.
 
 = 1.1.0 =
 * New: Smart Mappings — map any zero-result term to a product/category/URL, with three storefront behaviors (none / add-to-results / redirect) and a usage counter. / جديد: الربط الذكي — اربط المصطلح الصفري بمنتج أو تصنيف أو رابط مع ثلاثة سلوكيات وعداد استفادات.
@@ -157,6 +175,9 @@ No. Deactivation only removes scheduled tasks; your data stays intact. Full unin
 * UI language auto-detects the site language on first activation (Arabic/English), with manual override in settings.
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+Feature release: customer notifications (single + group, in-store + email), user/product log views, editable AR/EN templates, email health check, notifications log. / إصدار مزايا: إشعارات الزبائن (فردي وجماعي، داخل المتجر والبريد)، عرض حسب المستخدم/المنتج، قوالب قابلة للتعديل، فحص صحة البريد، سجل الإشعارات.
 
 = 1.1.0 =
 Feature release: Smart Mappings, email digest, Telegram, bot filtering, Arabic normalization with auto-migration, log filters, chart comparison, WP-CLI/REST. / إصدار مزايا: الربط الذكي، التقرير البريدي، Telegram، فلترة الروبوتات، التطبيع العربي مع ترحيل تلقائي، فلاتر السجلات، مقارنة الرسم البياني، WP-CLI/REST.

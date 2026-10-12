@@ -1,5 +1,7 @@
 # 🗺️ خارطة الطريق — ROADMAP
 
+> **STATUS / الحالة (2026-10-12):** v1.1.0 shipped in full (F-1..F-8 + TD-1..3). v1.2.0 shipped the same day with **customer notifications** (single + group, in-store + email, editable AR/EN templates), user/by-product log views and an email health check — a feature requested directly from real-store usage. Next planning cycle: v1.3 (auto-suggestions, generic webhook, PDF attach). / نُفّذت خطة 1.1.0 كاملة، وصدرت 1.2.0 في اليوم نفسه بإشعارات الزبائن وعرضي المستخدم/المنتج وفحص البريد — بطلب مباشر من الاستخدام الفعلي. التخطيط القادم: 1.3.
+
 | البند | القيمة |
 |------|--------|
 | **الإصدار الحالي المنشور** | 1.0.1 (2026-10-11) |

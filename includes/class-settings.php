@@ -49,6 +49,11 @@ class WZSI_Settings
             'telegram_bot_token'  => '',
             'telegram_chat_id'    => '',
             'notify_min_occurrences' => 1,
+            // F-9 (v1.2.0): قوالب إشعارات الزبائن — فارغ = القالب الافتراضي من WZSI_Notify::default_templates()
+            'notify_template_subject_ar' => '',
+            'notify_template_body_ar'    => '',
+            'notify_template_subject_en' => '',
+            'notify_template_body_en'    => '',
             'digest_enabled'      => 0,
             'digest_frequency'    => 'weekly',
             'digest_email'        => '',
@@ -147,6 +152,18 @@ class WZSI_Settings
         add_settings_field('wzsi_digest_freq', wzsi_t('field_digest_frequency'), array($this, 'render_digest_freq_field'), 'wzsi_settings_page', 'wzsi_digest_section', array());
         add_settings_field('wzsi_digest_email', wzsi_t('field_digest_email'), array($this, 'render_email_field'), 'wzsi_settings_page', 'wzsi_digest_section', array('key' => 'digest_email'));
         add_settings_field('wzsi_digest_test', wzsi_t('digest_send_test'), array($this, 'render_digest_test_button'), 'wzsi_settings_page', 'wzsi_digest_section', array());
+
+        // قسم F-9 (v1.2.0): قوالب إشعارات الزبائن (عربي + إنجليزي)
+        add_settings_section(
+            'wzsi_notify_tpl_section',
+            wzsi_t('section_ntf_templates'),
+            function () {
+                echo '<p>' . esc_html(wzsi_t('desc_ntf_templates')) . '</p>';
+            },
+            'wzsi_settings_page'
+        );
+        add_settings_field('wzsi_ntf_tpl_ar', wzsi_t('ntf_tpl_arabic'), array($this, 'render_notify_templates_ar'), 'wzsi_settings_page', 'wzsi_notify_tpl_section', array());
+        add_settings_field('wzsi_ntf_tpl_en', wzsi_t('ntf_tpl_english'), array($this, 'render_notify_templates_en'), 'wzsi_settings_page', 'wzsi_notify_tpl_section', array());
 
         // قسم الواجهة
         add_settings_section(
@@ -271,6 +288,11 @@ class WZSI_Settings
         $sanitized['telegram_bot_token']  = sanitize_text_field($input['telegram_bot_token'] ?? '');
         $sanitized['telegram_chat_id']    = sanitize_text_field($input['telegram_chat_id'] ?? '');
         $sanitized['notify_min_occurrences'] = max(1, min(1000, (int) ($input['notify_min_occurrences'] ?? 1)));
+        // F-9: قوالب الإشعارات (فارغ يعني: استخدم القالب الافتراضي)
+        $sanitized['notify_template_subject_ar'] = sanitize_text_field($input['notify_template_subject_ar'] ?? '');
+        $sanitized['notify_template_body_ar']    = sanitize_textarea_field($input['notify_template_body_ar'] ?? '');
+        $sanitized['notify_template_subject_en'] = sanitize_text_field($input['notify_template_subject_en'] ?? '');
+        $sanitized['notify_template_body_en']    = sanitize_textarea_field($input['notify_template_body_en'] ?? '');
         $sanitized['digest_enabled']      = !empty($input['digest_enabled']) ? 1 : 0;
         $freq_in = isset($input['digest_frequency']) ? $input['digest_frequency'] : 'weekly';
         $sanitized['digest_frequency']    = in_array($freq_in, array('daily', 'weekly'), true) ? $freq_in : 'weekly';
@@ -397,6 +419,39 @@ class WZSI_Settings
             '&#9993;',
             esc_html(wzsi_t('digest_send_test'))
         );
+    }
+
+    /**
+     * F-9 (v1.2.0): قوالب الإشعارات — عربي ثم إنجليزي
+     * فارغ في أي حقل = يُستخدم القالب الافتراضي من WZSI_Notify::default_templates()
+     */
+    private function render_template_pair($lang)
+    {
+        $options  = get_option('wzsi_settings', self::get_defaults());
+        $defaults = WZSI_Notify::default_templates();
+
+        $subj = $options['notify_template_subject_' . $lang] ?? '';
+        $body = $options['notify_template_body_' . $lang] ?? '';
+
+        echo '<div style="max-width:640px;">';
+        echo '<p style="margin:0 0 6px;"><strong>' . esc_html(wzsi_t('ntf_tpl_subject')) . '</strong></p>';
+        echo '<input type="text" class="large-text" name="wzsi_settings[notify_template_subject_' . esc_attr($lang) . ']" value="' . esc_attr($subj) . '" placeholder="' . esc_attr($defaults[$lang]['subject']) . '">';
+        echo '<p style="margin:10px 0 6px;"><strong>' . esc_html(wzsi_t('ntf_tpl_body')) . '</strong></p>';
+        echo '<textarea class="large-text" rows="9" name="wzsi_settings[notify_template_body_' . esc_attr($lang) . ']" placeholder="' . esc_attr($defaults[$lang]['body']) . '">' . esc_textarea($body) . '</textarea>';
+        if ('' === $subj && '' === $body) {
+            echo '<p class="description">' . esc_html(wzsi_t('ntf_tpl_default_hint')) . '</p>';
+        }
+        echo '</div>';
+    }
+
+    public function render_notify_templates_ar()
+    {
+        $this->render_template_pair('ar');
+    }
+
+    public function render_notify_templates_en()
+    {
+        $this->render_template_pair('en');
     }
 
     /**
